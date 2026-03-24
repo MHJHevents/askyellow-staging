@@ -120,3 +120,15 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+    # Image downloads tracking
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS image_downloads (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER,
+        image_url TEXT NOT NULL,
+        download_count INTEGER DEFAULT 0,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(user_id, image_url)
+    );
+    """)
