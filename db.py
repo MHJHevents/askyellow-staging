@@ -6,10 +6,10 @@ import psycopg2.extras
 # POSTGRES DB FOR USERS / CONVERSATIONS / MESSAGES
 # =============================================================
 
-# DATABASE_URL komt uit de Render-omgeving
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise RuntimeError("DATABASE_URL is niet ingesteld (env var DATABASE_URL).")
+
 
 def get_db_conn():
     """Open een nieuwe PostgreSQL-verbinding met dict-rows."""
@@ -19,6 +19,7 @@ def get_db_conn():
     )
     return conn
 
+
 def get_db():
     """FastAPI dependency die de verbinding automatisch weer sluit."""
     conn = get_db_conn()
@@ -27,8 +28,9 @@ def get_db():
     finally:
         conn.close()
 
+
 def init_db():
-    """Maak basis-tabellen aan als ze nog niet bestaan."""
+    """Maak basis-tabellen aan als ze nog niet bestaan + voer lichte schema-migraties uit."""
     conn = get_db_conn()
     cur = conn.cursor()
 
@@ -69,7 +71,7 @@ def init_db():
         """
     )
 
-    # Auth users: aparte tabel voor geregistreerde accounts
+    # Auth users
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS auth_users (
@@ -84,7 +86,7 @@ def init_db():
         """
     )
 
-    # User sessions voor ingelogde gebruikers
+    # User sessions
     cur.execute(
         """
         CREATE TABLE IF NOT EXISTS user_sessions (
@@ -94,6 +96,27 @@ def init_db():
         );
         """
     )
+
+    # -----------------------------
+    # Lightweight migrations
+    # -----------------------------
+    cur.execute("ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT FALSE;")
+    cur.execute("ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS email_verified_at TIMESTAMPTZ;")
+    cur.execute("ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS verify_token TEXT;")
+    cur.execute("ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS verify_expires TIMESTAMPTZ;")
+    cur.execute("ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS reset_token TEXT;")
+    cur.execute("ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS reset_expires TIMESTAMPTZ;")
+
+    # Voor toekomstige account/subscription uitbreiding
+    cur.execute("ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS account_role TEXT NOT NULL DEFAULT 'user';")
+    cur.execute("ALTER TABLE auth_users ADD COLUMN IF NOT EXISTS subscription_status TEXT NOT NULL DEFAULT 'free';")
+
+    # Indexes
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_auth_users_email ON auth_users(email);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_auth_users_verify_token ON auth_users(verify_token);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_auth_users_reset_token ON auth_users(reset_token);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);")
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at);")
 
     conn.commit()
     conn.close()
