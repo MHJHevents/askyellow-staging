@@ -194,50 +194,50 @@ async def ask(request: Request):
             "results_count": len(reduced) if 'reduced' in locals() else None
         })
 
-        # ==============================
-        # 🗄 SEARCH LOGGING TO DB
-        # ==============================
-        try:
-            conn = get_db_conn()
-            cursor = conn.cursor()
+        # # ==============================
+        # # 🗄 SEARCH LOGGING TO DB
+        # # ==============================
+        # try:
+        #     conn = get_db_conn()
+        #     cursor = conn.cursor()
 
-            cursor.execute("""
-                INSERT INTO search_logs
-                (
-                    session_id,
-                    user_input,
-                    mode,
-                    intent,
-                    constraints_json,
-                    steps,
-                    pending_key,
-                    results_count
-                )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                session_id,
-                question,
-                mode,
-                intent,
-                Json(search_state.get("constraints", {})),  # 🔥 correct JSONB handling
-                search_state.get("steps"),
-                search_state.get("pending_key"),
-                len(payload.get("affiliate_results", []))
-            ))
+        #     cursor.execute("""
+        #         INSERT INTO search_logs
+        #         (
+        #             session_id,
+        #             user_input,
+        #             mode,
+        #             intent,
+        #             constraints_json,
+        #             steps,
+        #             pending_key,
+        #             results_count
+        #         )
+        #         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        #     """, (
+        #         session_id,
+        #         question,
+        #         mode,
+        #         intent,
+        #         Json(search_state.get("constraints", {})),  # 🔥 correct JSONB handling
+        #         search_state.get("steps"),
+        #         search_state.get("pending_key"),
+        #         len(payload.get("affiliate_results", []))
+        #     ))
 
-            inserted_id = cur.fetchone()[0]
-            conn.commit()
-            cur.close()
-            conn.close()
+        #     inserted_id = cur.fetchone()[0]
+        #     conn.commit()
+        #     cur.close()
+        #     conn.close()
 
-            logger.info("[SEARCH LOG INSERTED]", extra={"search_log_id": inserted_id, "session_id": session_id})
+        #     logger.info("[SEARCH LOG INSERTED]", extra={"search_log_id": inserted_id, "session_id": session_id})
 
-            # optioneel: zet hem tijdelijk in response meta zodat jij meteen ziet dat insert gebeurt
-            payload.setdefault("meta", {})
-            payload["meta"]["search_log_id"] = inserted_id
-        except Exception as e:
-            logger.error("[SEARCH LOGGING FAILED] " + str(e))
-            logger.error(traceback.format_exc())    
+        #     # optioneel: zet hem tijdelijk in response meta zodat jij meteen ziet dat insert gebeurt
+        #     payload.setdefault("meta", {})
+        #     payload["meta"]["search_log_id"] = inserted_id
+        # except Exception as e:
+        #     logger.error("[SEARCH LOGGING FAILED] " + str(e))
+        #     logger.error(traceback.format_exc())    
         return _response(**payload)
 
     # =========================================================
