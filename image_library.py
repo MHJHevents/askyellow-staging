@@ -1,5 +1,5 @@
-from chat_engine.db import get_conn
-from chat_engine.chat_shared import get_auth_user_from_session
+from db import get_conn
+from chat_shared import get_auth_user_from_session
 
 
 def get_user_images_library(session_id: str):
