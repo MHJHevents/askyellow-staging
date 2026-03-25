@@ -2,6 +2,10 @@ from fastapi import APIRouter, HTTPException, Request
 
 from image_shared import generate_image, require_auth_session
 from image_library import get_user_images_library, register_download
+from chat_shared import get_auth_user_from_session
+
+from db import get_db_conn
+
 router = APIRouter()
 
 
@@ -33,7 +37,7 @@ def download_image(payload: dict):
     session_id = payload.get("session_id")
     image_url = payload.get("image_url")
 
-    conn = get_conn()
+    conn = get_db_conn()
     try:
         user = get_auth_user_from_session(conn, session_id)
         if not user:
@@ -79,13 +83,13 @@ def download_image(payload: dict):
 
 @router.get("/images/library")
 def get_images_library(session_id: str):
-    conn = get_conn()
+    conn = get_db_conn()
     try:
         user = get_auth_user_from_session(conn, session_id)
         if not user:
             return {"images": []}
 
-        rows = get_user_images(conn, user["id"])
+        rows = get_user_images_library(conn, user["id"])
 
         images = []
         for r in rows:
