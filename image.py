@@ -5,6 +5,7 @@ from image_library import get_user_images_library, register_download
 from chat_shared import get_auth_user_from_session
 
 from db import get_db_conn
+import hashlib
 
 router = APIRouter()
 
@@ -32,16 +33,22 @@ def get_images_library(session_id: str):
     images = get_user_images_library(session_id)
     return {"images": images}
 
+
 @router.post("/images/download")
 def download_image(payload: dict):
     session_id = payload.get("session_id")
     image_url = payload.get("image_url")
 
+    if not session_id or not image_url:
+        return {"allowed": False, "reason": "missing_data"}
+
+    image_key = hashlib.sha256(image_url.encode("utf-8")).hexdigest()
+
     conn = get_db_conn()
     try:
         user = get_auth_user_from_session(conn, session_id)
         if not user:
-            return {"allowed": False}
+            return {"allowed": False, "reason": "not_logged_in"}
 
         cur = conn.cursor()
 
@@ -52,34 +59,37 @@ def download_image(payload: dict):
             WHERE id = %s
         """, (user["id"],))
 
-        sub = cur.fetchone()["subscription_status"]
+        row = cur.fetchone()
+        sub = row["subscription_status"] if row else "free"
 
+        # betaald = onbeperkt
         if sub != "free":
             return {"allowed": True}
 
-        # free → max 1
+        # free → max 1 download per unieke afbeelding
         cur.execute("""
-            SELECT COUNT(*) as cnt
+            SELECT 1
             FROM image_downloads
-            WHERE user_id = %s AND image_url = %s
-        """, (user["id"], image_url))
+            WHERE user_id = %s AND image_key = %s
+            LIMIT 1
+        """, (user["id"], image_key))
 
-        count = cur.fetchone()["cnt"]
+        existing = cur.fetchone()
 
-        if count >= 1:
-            return {"allowed": False}
+        if existing:
+            return {"allowed": False, "reason": "limit_reached"}
 
         cur.execute("""
-            INSERT INTO image_downloads (user_id, image_url)
-            VALUES (%s, %s)
-        """, (user["id"], image_url))
+            INSERT INTO image_downloads (user_id, image_key, image_url)
+            VALUES (%s, %s, %s)
+        """, (user["id"], image_key, image_url))
 
         conn.commit()
-
         return {"allowed": True}
 
     finally:
         conn.close()
+
 
 @router.get("/images/library")
 def get_images_library(session_id: str):

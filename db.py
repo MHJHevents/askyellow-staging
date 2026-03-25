@@ -97,6 +97,41 @@ def init_db():
         """
     )
 
+    # Image downloads tracking
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS image_downloads (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+        image_key TEXT NOT NULL,
+        image_url TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    """)
+
+    # Oude index/constraint cleanup voor eerdere versies
+    cur.execute("DROP INDEX IF EXISTS idx_image_downloads_user_image;")
+    cur.execute("DROP INDEX IF EXISTS image_downloads_user_id_image_url_key;")
+
+    # Kolommen toevoegen als tabel al bestond uit eerdere poging
+    cur.execute("ALTER TABLE image_downloads ADD COLUMN IF NOT EXISTS image_key TEXT;")
+    cur.execute("ALTER TABLE image_downloads ADD COLUMN IF NOT EXISTS image_url TEXT NOT NULL DEFAULT '';")
+    cur.execute("ALTER TABLE image_downloads DROP COLUMN IF EXISTS download_count;")
+
+    # Bestaande rows backfillen
+    cur.execute("""
+    UPDATE image_downloads
+    SET image_key = md5(image_url)
+    WHERE (image_key IS NULL OR image_key = '')
+    AND image_url IS NOT NULL
+    AND image_url <> ''
+    """)
+
+    # Nieuwe veilige unieke index
+    cur.execute("""
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_image_downloads_user_key
+    ON image_downloads(user_id, image_key);
+    """)
+
     # -----------------------------
     # Lightweight migrations
     # -----------------------------
@@ -118,17 +153,6 @@ def init_db():
     cur.execute("CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at);")
 
-    # Image downloads tracking
-    cur.execute("""
-    CREATE TABLE IF NOT EXISTS image_downloads (
-        id SERIAL PRIMARY KEY,
-        user_id INTEGER,
-        image_url TEXT NOT NULL,
-        download_count INTEGER DEFAULT 0,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        UNIQUE(user_id, image_url)
-    );
-    """)
     
     conn.commit()
     conn.close()
