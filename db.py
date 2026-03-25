@@ -110,7 +110,10 @@ def init_db():
 
     # Oude index/constraint cleanup voor eerdere versies
     cur.execute("DROP INDEX IF EXISTS idx_image_downloads_user_image;")
-    cur.execute("DROP INDEX IF EXISTS image_downloads_user_id_image_url_key;")
+    cur.execute("""
+    ALTER TABLE image_downloads
+    DROP CONSTRAINT IF EXISTS image_downloads_user_id_image_url_key;
+    """)
 
     # Kolommen toevoegen als tabel al bestond uit eerdere poging
     cur.execute("ALTER TABLE image_downloads ADD COLUMN IF NOT EXISTS image_key TEXT;")
