@@ -3,7 +3,7 @@ from chat_shared import get_auth_user_from_session
 
 
 def get_user_images_library(session_id: str):
-    conn = get_conn()
+    conn = get_db_conn()
     try:
         user = get_auth_user_from_session(conn, session_id)
         if not user:
