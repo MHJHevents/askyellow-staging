@@ -118,9 +118,6 @@ def init_db():
     cur.execute("CREATE INDEX IF NOT EXISTS idx_user_sessions_user_id ON user_sessions(user_id);")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_user_sessions_expires_at ON user_sessions(expires_at);")
 
-    conn.commit()
-    conn.close()
-
     # Image downloads tracking
     cur.execute("""
     CREATE TABLE IF NOT EXISTS image_downloads (
@@ -132,3 +129,8 @@ def init_db():
         UNIQUE(user_id, image_url)
     );
     """)
+    
+    conn.commit()
+    conn.close()
+
+    
