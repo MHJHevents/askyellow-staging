@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query
 from chat_engine.db import get_conn
 from core.time_context import build_time_context, build_llm_time_hint
+from core.askyellow_context import get_relevant_askyellow_context
 
 from chat_shared import (
     store_message_pair,
@@ -124,10 +125,12 @@ def chat(payload: dict):
             "url": image_url
         }
 
+    kb_answer = get_relevant_askyellow_context(message)
+
     answer, _ = call_yellowmind_llm(
         question=message,
         language="nl",
-        kb_answer=None,
+        kb_answer=kb_answer,
         sql_match=None,
         hints=hints,
         history=history
