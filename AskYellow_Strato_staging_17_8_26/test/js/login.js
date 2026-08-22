@@ -1,8 +1,5 @@
 const BASE_PATH = "";
-const API_BASE =
-    location.hostname === "askyellow.eu" || location.hostname === "www.askyellow.eu"
-        ? "https://askyellow-ai.onrender.com"
-        : "https://askyellow-staging.onrender.com";
+const API_BASE = "https://askyellow-staging.onrender.com";
 
 const SESSION_KEY = "ay_session_id";
 

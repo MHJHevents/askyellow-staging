@@ -1,7 +1,4 @@
-const API_BASE =
-    location.hostname === "askyellow.nl" || location.hostname === "www.askyellow.nl"
-        ? "https://askyellow-ai.onrender.com"
-        : "https://askyellow-staging.onrender.com";
+const API_BASE = "https://askyellow-staging.onrender.com";
 
 function setError(message) {
     document.getElementById("errorBox").textContent = message || "";
