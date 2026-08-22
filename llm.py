@@ -10,7 +10,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 # =============================================================
 # COMPACT YELLO CORE
 # Generieke gedragskern. Bewust klein houden: capabilities en knowledge
-# worden later alleen toegevoegd wanneer de vraag ze nodig heeft.
+# worden alleen toegevoegd wanneer de vraag ze nodig heeft.
 # =============================================================
 YELLO_CORE_PROMPT = """
 Beantwoord de gebruiker helder, behulpzaam en eerlijk.
@@ -71,6 +71,16 @@ def call_yellowmind_llm(
         messages.append({
             "role": "system",
             "content": hints["time_hint"]
+        })
+
+    if kb_answer:
+        messages.append({
+            "role": "system",
+            "content": (
+                "Relevante AskYellow-kennis voor deze vraag:\n"
+                f"{kb_answer}\n"
+                "Gebruik deze informatie als bron voor het antwoord, maar formuleer natuurlijk en passend bij het gesprek."
+            )
         })
 
     if hints.get("web_context"):
