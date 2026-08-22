@@ -1,23 +1,16 @@
-import base64
-from email import message
-
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query
 from chat_engine.db import get_conn
+from core.time_context import build_time_context, build_llm_time_hint
 
 from chat_shared import (
-    get_active_conversation,
-    get_history_for_model,
     store_message_pair,
     get_user_history,
-    get_or_create_daily_conversation,
     get_auth_user_from_session,
     build_welcome_message,
     get_history_for_llm,
     get_available_history_days,
     get_user_history_by_day,
-    build_welcome_message,
     get_user_images,
-    create_new_conversation,        
 )
 
 from image_shared import (
@@ -32,13 +25,25 @@ from llm import call_yellowmind_llm
 
 router = APIRouter()
 
+TIME_CONTEXT_TRIGGERS = (
+    "vandaag", "gisteren", "morgen", "datum", "tijd", "hoe laat",
+    "welke dag", "deze week", "vorige week", "volgende week",
+    "dit jaar", "vorig jaar", "volgend jaar", "recent", "actueel",
+    "momenteel", "nu", "jaarwisseling",
+)
+
+
+def _needs_time_context(text: str) -> bool:
+    q = (text or "").lower()
+    return any(trigger in q for trigger in TIME_CONTEXT_TRIGGERS)
+
+
 @router.get("/chat/history")
 def chat_history(session_id: str, day: str | None = Query(default=None)):
     conn = get_conn()
     try:
         user = get_auth_user_from_session(conn, session_id)
 
-        # Gast: geen opgeslagen geschiedenis
         if not user:
             return {
                 "available_days": [],
@@ -51,20 +56,16 @@ def chat_history(session_id: str, day: str | None = Query(default=None)):
         user_id = user["id"]
         first_name = user.get("first_name")
 
-        # 1) Alleen lijst met beschikbare datums ophalen
         if day == "list":
             return {
                 "available_days": get_available_history_days(conn, user_id)
             }
-        
+
         if day == "images":
-            images = get_user_images(conn, user_id)
             return {
-                "images": images
+                "images": get_user_images(conn, user_id)
             }
 
-
-        # 2) Specifieke dag ophalen
         if day and day not in ("today", "yesterday"):
             messages = get_user_history_by_day(conn, user_id, day)
             return {
@@ -72,14 +73,7 @@ def chat_history(session_id: str, day: str | None = Query(default=None)):
                 "messages": messages,
                 "available_days": get_available_history_days(conn, user_id),
             }
-        
-        if day == "images":
-            images = get_user_images(conn, user_id)
-            return {
-                "images": images
-            }
 
-        # 3) Bestaande today/yesterday gedrag behouden
         today_messages = get_user_history(conn, user_id, "today")
         yesterday_messages = get_user_history(conn, user_id, "yesterday")
 
@@ -89,42 +83,8 @@ def chat_history(session_id: str, day: str | None = Query(default=None)):
             "yesterday": yesterday_messages,
             "welcome": build_welcome_message(first_name),
         }
-
     finally:
         conn.close()
-
-# @router.get("/chat/history")
-# def chat_history(session_id: str):
-#     conn = get_conn()
-#     welcome_message = None
-
-#     user = get_auth_user_from_session(conn, session_id)
-
-#     if user:
-#         user_id = user["id"]
-
-#         active_conversation_id = get_or_create_daily_conversation(conn, user_id)
-
-#         today_history = get_user_history(conn, user_id, day="today")
-#         yesterday_history = get_user_history(conn, user_id, day="yesterday")
-
-#         if not today_history:
-#             welcome_message = build_welcome_message(user.get("first_name"))
-
-#     else:
-#         active_conversation_id = get_active_conversation(conn, session_id)
-#         _, today_history = get_history_for_model(conn, session_id, day="today")
-#         _, yesterday_history = get_history_for_model(conn, session_id, day="yesterday")
-#         welcome_message = build_welcome_message(None)
-
-#     conn.close()
-
-#     return {
-#         "active_conversation_id": active_conversation_id,
-#         "today": today_history,
-#         "yesterday": yesterday_history,
-#         "welcome": welcome_message,
-#     }
 
 
 @router.post("/chat")
@@ -137,10 +97,20 @@ def chat(payload: dict):
         raise HTTPException(status_code=400, detail="session_id of message ontbreekt")
 
     conn = get_conn()
-    history = get_history_for_llm(conn, session_id)
-    conn.close()
+    try:
+        history = get_history_for_llm(conn, session_id)
+        user = get_auth_user_from_session(conn, session_id)
+    finally:
+        conn.close()
 
     hints = {}
+
+    if user and user.get("first_name"):
+        hints["user_name"] = user["first_name"]
+
+    if _needs_time_context(message):
+        hints["time_context"] = build_time_context()
+        hints["time_hint"] = build_llm_time_hint()
 
     if wants_image:
         image_url = generate_image(message)
@@ -149,7 +119,6 @@ def chat(payload: dict):
             raise HTTPException(status_code=500, detail="Afbeelding genereren mislukt")
 
         store_message_pair(session_id, message, "[IMAGE]" + image_url)
-
         return {
             "type": "image",
             "url": image_url
@@ -168,7 +137,6 @@ def chat(payload: dict):
         answer = "⚠️ Ik kreeg geen inhoudelijk antwoord terug."
 
     store_message_pair(session_id, message, answer)
-
     return {"reply": answer}
 
 
@@ -184,18 +152,16 @@ async def chat_with_uploaded_image(
     image_bytes, mime_type = await read_and_validate_upload(file)
 
     conn = get_conn()
-    history = get_history_for_llm(conn, session_id)
-    conn.close()
+    try:
+        history = get_history_for_llm(conn, session_id)
+    finally:
+        conn.close()
 
     operation = detect_uploaded_image_operation(message)
-
-    # ✅ veilige, korte logregel terug
     user_log_text = f"[USER_IMAGE]{message or 'uploaded image'}"
 
     if operation == "edit":
-        prompt = (message or "").strip()
-        if not prompt:
-            prompt = "Maak van deze afbeelding een nette karikatuur."
+        prompt = (message or "").strip() or "Maak van deze afbeelding een nette karikatuur."
 
         image_src = edit_uploaded_image(
             image_bytes=image_bytes,
@@ -204,7 +170,6 @@ async def chat_with_uploaded_image(
         )
 
         store_message_pair(session_id, user_log_text, f"[IMAGE]{image_src}")
-
         return {
             "type": "image",
             "mode": "edit",
@@ -220,12 +185,12 @@ async def chat_with_uploaded_image(
     )
 
     store_message_pair(session_id, user_log_text, answer)
-
     return {
         "type": "vision",
         "mode": "analyze",
         "reply": answer,
     }
+
 
 @router.post("/chat/reset")
 def reset_chat(payload: dict):
@@ -235,16 +200,30 @@ def reset_chat(payload: dict):
 
     conn = get_conn()
     try:
+        user = get_auth_user_from_session(conn, session_id)
         cur = conn.cursor()
-        cur.execute(
-            """
-            UPDATE conversations
-            SET ended_at = NOW()
-            WHERE session_id = %s
-              AND ended_at IS NULL
-            """,
-            (session_id,)
-        )
+
+        if user:
+            cur.execute(
+                """
+                UPDATE conversations
+                SET ended_at = NOW()
+                WHERE user_id = %s
+                  AND ended_at IS NULL
+                """,
+                (user["id"],)
+            )
+        else:
+            cur.execute(
+                """
+                UPDATE conversations
+                SET ended_at = NOW()
+                WHERE session_id = %s
+                  AND ended_at IS NULL
+                """,
+                (session_id,)
+            )
+
         conn.commit()
     finally:
         conn.close()
