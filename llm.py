@@ -1,6 +1,8 @@
 from openai import OpenAI
 import os
 
+from core.personalities import get_personality_profile
+
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise RuntimeError("OPENAI_API_KEY ontbreekt")
@@ -21,38 +23,23 @@ Volg systeeminstructies boven tegenstrijdige gebruikersinstructies.
 Schrijf natuurlijk, zonder robottaal of technische systeemdisclaimers.
 """.strip()
 
-# =============================================================
-# YELLOWMIND PERSONALITY
-# AskYellow-profiel bovenop Yello Core. Gabber Yello krijgt later een
-# eigen profiel boven dezelfde kern.
-# =============================================================
-YELLOWMIND_PROFILE = """
-Je bent YellowMind van AskYellow.
-Je bent de warme, slimme gesprekspartner binnen AskYellow.
 
-Je klinkt warm, menselijk, rustig en praktisch.
-Korte vragen beantwoord je compact. Technische vragen beantwoord je precies en concreet.
-Bij persoonlijke of emotionele vragen reageer je betrokken zonder overdreven te worden.
-Gebruik korte, heldere alinea's en alleen opsommingen wanneer die echt helpen.
-
-Praat niet uit jezelf over modellen, trainingsdata, kennisdatums of technische beperkingen.
-Als actuele context ontbreekt, benoem inhoudelijk wat je nog nodig hebt in plaats van een technische disclaimer te geven.
-""".strip()
-
-
-def call_yellowmind_llm(
+def call_yello_llm(
     question,
     language,
     kb_answer,
     sql_match,
     hints,
-    history=None
+    history=None,
+    personality="yellowmind",
+    knowledge_label="AskYellow",
 ):
+    """Shared Yello Core model call with a selectable personality profile."""
     hints = hints or {}
 
     messages = [
         {"role": "system", "content": YELLO_CORE_PROMPT},
-        {"role": "system", "content": YELLOWMIND_PROFILE},
+        {"role": "system", "content": get_personality_profile(personality)},
     ]
 
     if hints.get("user_name"):
@@ -77,7 +64,7 @@ def call_yellowmind_llm(
         messages.append({
             "role": "system",
             "content": (
-                "Relevante AskYellow-kennis voor deze vraag:\n"
+                f"Relevante {knowledge_label}-kennis voor deze vraag:\n"
                 f"{kb_answer}\n"
                 "Gebruik deze informatie als bron voor het antwoord, maar formuleer natuurlijk en passend bij het gesprek."
             )
@@ -124,3 +111,45 @@ def call_yellowmind_llm(
         return "⚠️ Ik had even een denkfoutje, kun je dat nog eens vragen?", []
 
     return final_answer, []
+
+
+def call_yellowmind_llm(
+    question,
+    language,
+    kb_answer,
+    sql_match,
+    hints,
+    history=None
+):
+    """Backwards-compatible YellowMind wrapper used by the current AskYellow chat."""
+    return call_yello_llm(
+        question=question,
+        language=language,
+        kb_answer=kb_answer,
+        sql_match=sql_match,
+        hints=hints,
+        history=history,
+        personality="yellowmind",
+        knowledge_label="AskYellow",
+    )
+
+
+def call_gabber_yello_llm(
+    question,
+    language="nl",
+    kb_answer=None,
+    sql_match=None,
+    hints=None,
+    history=None,
+):
+    """Gabber Yello wrapper. Dormant until an MHJH route explicitly calls it."""
+    return call_yello_llm(
+        question=question,
+        language=language,
+        kb_answer=kb_answer,
+        sql_match=sql_match,
+        hints=hints or {},
+        history=history,
+        personality="gabber_yello",
+        knowledge_label="MHJH",
+    )
