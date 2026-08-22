@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query
 from chat_engine.db import get_conn
 from core.time_context import build_time_context, build_llm_time_hint
 from core.askyellow_context import get_relevant_askyellow_context
+from core.capability_router import detect_capability
 
 from chat_shared import (
     store_message_pair,
@@ -96,6 +97,15 @@ def chat(payload: dict):
 
     if not session_id or not message:
         raise HTTPException(status_code=400, detail="session_id of message ontbreekt")
+
+    # Capability routing stays cheap and deterministic. The cold Shopper owns
+    # actionable product-search requests; YellowMind owns normal conversation.
+    if not wants_image and detect_capability(message) == "shopper":
+        return {
+            "type": "search",
+            "query": message,
+            "capability": "shopper",
+        }
 
     conn = get_conn()
     try:
