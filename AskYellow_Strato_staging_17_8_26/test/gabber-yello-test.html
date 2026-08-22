@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gabber Yello Test</title>
+  <style>
+    :root{--bg:#050509;--panel:#0b0b10;--accent:#ffd700;--text:#f5f5f5;--muted:#9f9f9f;--border:#2a2a31}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at top,#252515 0,#08080b 38%,#000 100%);color:var(--text);font-family:Arial,sans-serif;min-height:100vh;display:flex;justify-content:center;padding:24px}
+    .wrap{width:min(100%,900px);display:flex;flex-direction:column;gap:16px}
+    .head{background:var(--panel);border:1px solid rgba(255,215,0,.55);border-radius:18px;padding:18px 20px;box-shadow:0 0 28px rgba(255,215,0,.12)}
+    h1{margin:0 0 6px;color:var(--accent);font-size:1.7rem}
+    .sub{color:var(--muted);font-size:.95rem;line-height:1.5}
+    .status{margin-top:10px;font-size:.85rem;color:#bdbdbd}
+    .chat{min-height:480px;max-height:62vh;overflow-y:auto;background:rgba(5,5,9,.92);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+    .msg{max-width:82%;padding:12px 14px;border-radius:14px;line-height:1.5;white-space:pre-wrap}
+    .user{align-self:flex-end;background:var(--accent);color:#111;border-bottom-right-radius:4px}
+    .bot{align-self:flex-start;background:#15151a;border:1px solid rgba(255,215,0,.35);border-bottom-left-radius:4px}
+    .meta{font-size:.75rem;color:var(--muted);margin-top:5px}
+    .composer{display:flex;gap:10px}
+    textarea{flex:1;min-height:54px;max-height:150px;resize:vertical;border-radius:14px;border:1px solid #444;background:#111;color:#fff;padding:14px;font:inherit;outline:none}
+    textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(255,215,0,.12)}
+    button{border:0;border-radius:14px;padding:0 20px;font-weight:800;cursor:pointer}
+    #send{background:var(--accent);color:#111;min-width:110px}
+    #reset{background:#1a1a1f;color:#fff;border:1px solid #444;padding:10px 16px}
+    .actions{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+    .quick{display:flex;gap:8px;flex-wrap:wrap}
+    .quick button{background:#141419;color:#ddd;border:1px solid #333;padding:8px 10px;font-weight:600}
+    .quick button:hover,#reset:hover{border-color:var(--accent)}
+    .error{color:#ff8c8c}
+    @media(max-width:650px){body{padding:10px}.chat{min-height:60vh}.msg{max-width:92%}.composer{flex-direction:column}#send{height:48px}.actions{align-items:flex-start}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="head">
+      <h1>Gabber Yello — testhok 🟡</h1>
+      <div class="sub">Afgeschermde staging-test. Deze pagina praat rechtstreeks met <strong>/gabber-yello/chat</strong> en gebruikt een eigen Gabber Yello-testsessie.</div>
+      <div class="status" id="status">Klaar om wakker te worden.</div>
+    </section>
+
+    <section class="chat" id="chat">
+      <div class="msg bot">Yo maat! Gabber Yello staat klaar voor de eerste testronde. Gooi maar wat naar m’n harses. 😎</div>
+    </section>
+
+    <div class="actions">
+      <div class="quick">
+        <button type="button" data-q="Wie ben jij?">Wie ben jij?</button>
+        <button type="button" data-q="Wanneer is Den Haag Hakkûh II?">Event</button>
+        <button type="button" data-q="Wie staan er op de line-up?">Line-up</button>
+        <button type="button" data-q="Wat is MijnMHJH?">MijnMHJH</button>
+        <button type="button" data-q="Hoe werkt de Lootjesjacht?">Lootjesjacht</button>
+      </div>
+      <button id="reset" type="button">Reset testsessie</button>
+    </div>
+
+    <div class="composer">
+      <textarea id="input" placeholder="Praat met Gabber Yello..."></textarea>
+      <button id="send" type="button">Verstuur</button>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = "https://askyellow-staging.onrender.com";
+    const SESSION_KEY = "gabber_yello_test_session";
+    const sessionId = localStorage.getItem(SESSION_KEY) || `gabber-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    localStorage.setItem(SESSION_KEY, sessionId);
+
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const send = document.getElementById("send");
+    const reset = document.getElementById("reset");
+    const status = document.getElementById("status");
+
+    function addMessage(text, role, meta="") {
+      const box = document.createElement("div");
+      box.className = `msg ${role}`;
+      box.textContent = text;
+      if (meta) {
+        const m = document.createElement("div");
+        m.className = "meta";
+        m.textContent = meta;
+        box.appendChild(m);
+      }
+      chat.appendChild(box);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function ask(text) {
+      const question = (text || "").trim();
+      if (!question || send.disabled) return;
+
+      addMessage(question, "user");
+      input.value = "";
+      send.disabled = true;
+      status.textContent = "Gabber Yello is aan het ouwehoeren...";
+
+      try {
+        const res = await fetch(`${API_BASE}/gabber-yello/chat`, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({session_id: sessionId, message: question})
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
+
+        const meta = data.knowledge_used ? "MHJH knowledge gebruikt" : "Alleen personality/core";
+        addMessage(data.reply || "Geen antwoord ontvangen.", "bot", meta);
+        status.textContent = `Gabber Yello actief · ${meta}`;
+      } catch (err) {
+        addMessage(`Fout: ${err.message}`, "bot");
+        status.innerHTML = `<span class="error">Verbinding mislukt.</span>`;
+      } finally {
+        send.disabled = false;
+        input.focus();
+      }
+    }
+
+    send.addEventListener("click", () => ask(input.value));
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        ask(input.value);
+      }
+    });
+
+    document.querySelectorAll("[data-q]").forEach(btn => {
+      btn.addEventListener("click", () => ask(btn.dataset.q));
+    });
+
+    reset.addEventListener("click", async () => {
+      reset.disabled = true;
+      try {
+        const res = await fetch(`${API_BASE}/gabber-yello/reset`, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({session_id: sessionId})
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        chat.innerHTML = '<div class="msg bot">Testsessie gereset. Schone lei, maat. 😎</div>';
+        status.textContent = "Testsessie gereset.";
+      } catch (err) {
+        status.innerHTML = `<span class="error">Reset mislukt: ${err.message}</span>`;
+      } finally {
+        reset.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
