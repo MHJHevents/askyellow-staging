@@ -300,14 +300,14 @@ def get_history_for_llm(conn, session_id: str, limit=30):
             return []
 
     cur.execute("""
-        SELECT role, content
+        SELECT role, content, created_at
         FROM messages
         WHERE conversation_id = %s
-        ORDER BY created_at ASC
+        ORDER BY created_at DESC
         LIMIT %s
     """, (conv_id, limit))
 
-    rows = cur.fetchall()
+    rows = list(reversed(cur.fetchall()))
 
     cleaned = []
     for r in rows:
