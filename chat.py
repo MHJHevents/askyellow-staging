@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query
 from chat_engine.db import get_conn
 from core.time_context import build_time_context, build_llm_time_hint
 from core.askyellow_context import get_relevant_askyellow_context
+from core.mhjh_context import get_relevant_mhjh_context
 from core.capability_router import detect_capability
 
 from chat_shared import (
@@ -23,7 +24,7 @@ from image_shared import (
     read_and_validate_upload,
 )
 
-from llm import call_yellowmind_llm
+from llm import call_yellowmind_llm, call_gabber_yello_llm
 
 router = APIRouter()
 
@@ -38,6 +39,11 @@ TIME_CONTEXT_TRIGGERS = (
 def _needs_time_context(text: str) -> bool:
     q = (text or "").lower()
     return any(trigger in q for trigger in TIME_CONTEXT_TRIGGERS)
+
+
+def _gabber_test_session_id(session_id: str) -> str:
+    """Keep Gabber Yello test history isolated from YellowMind history."""
+    return f"gabber-yello-test:{session_id}"
 
 
 @router.get("/chat/history")
@@ -151,6 +157,81 @@ def chat(payload: dict):
 
     store_message_pair(session_id, message, answer)
     return {"reply": answer}
+
+
+@router.post("/gabber-yello/chat")
+def gabber_yello_chat(payload: dict):
+    """Private staging test route for Gabber Yello.
+
+    Uses the same Yello Core and database-backed memory functions as YellowMind,
+    but stores history under an isolated test session id so the personalities do
+    not contaminate each other's conversations.
+    """
+    session_id = (payload.get("session_id") or "").strip()
+    message = (payload.get("message") or "").strip()
+
+    if not session_id or not message:
+        raise HTTPException(status_code=400, detail="session_id of message ontbreekt")
+
+    test_session_id = _gabber_test_session_id(session_id)
+
+    conn = get_conn()
+    try:
+        history = get_history_for_llm(conn, test_session_id)
+    finally:
+        conn.close()
+
+    hints = {}
+    if _needs_time_context(message):
+        hints["time_context"] = build_time_context()
+        hints["time_hint"] = build_llm_time_hint()
+
+    mhjh_context = get_relevant_mhjh_context(message)
+
+    answer, _ = call_gabber_yello_llm(
+        question=message,
+        language="nl",
+        kb_answer=mhjh_context,
+        sql_match=None,
+        hints=hints,
+        history=history,
+    )
+
+    if not answer:
+        answer = "⚠️ Gabber Yello had ff een vastlopertje. Vraag het nog eens."
+
+    store_message_pair(test_session_id, message, answer)
+    return {
+        "reply": answer,
+        "personality": "gabber_yello",
+        "knowledge_used": bool(mhjh_context),
+    }
+
+
+@router.post("/gabber-yello/reset")
+def reset_gabber_yello(payload: dict):
+    session_id = (payload.get("session_id") or "").strip()
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id ontbreekt")
+
+    test_session_id = _gabber_test_session_id(session_id)
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """
+            UPDATE conversations
+            SET ended_at = NOW()
+            WHERE session_id = %s
+              AND ended_at IS NULL
+            """,
+            (test_session_id,)
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    return {"ok": True}
 
 
 @router.post("/chat/image")
