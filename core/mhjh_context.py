@@ -8,15 +8,26 @@ prompt context.
 from functools import lru_cache
 import json
 from pathlib import Path
+import re
+import unicodedata
 
 KNOWLEDGE_DIR = Path(__file__).resolve().parent.parent / "gabber_yello" / "knowledge"
 KNOWLEDGE_FILES = (
+    "mhjh.json",
     "event.json",
     "mijnmhjh.json",
     "lootjesjacht.json",
     "arcade.json",
     "lineup.json",
 )
+
+
+def _normalize(text: str) -> str:
+    """Normalize spelling/punctuation before deterministic keyword matching."""
+    value = unicodedata.normalize("NFKD", (text or "").lower())
+    value = "".join(ch for ch in value if not unicodedata.combining(ch))
+    value = re.sub(r"[^a-z0-9]+", " ", value)
+    return " ".join(value.split())
 
 
 @lru_cache(maxsize=1)
@@ -34,11 +45,11 @@ def _load_mhjh_knowledge():
 def get_relevant_mhjh_context(message: str):
     """Return the single best MHJH knowledge answer, or ``None``.
 
-    Matching is intentionally local and deterministic: longer keyword matches
-    score higher, and multiple matches accumulate. This keeps token use low and
-    avoids pulling the entire MHJH library into every Gabber Yello request.
+    Matching is local and deterministic. Input and keywords are normalized so
+    punctuation and common diacritics such as Hakkûh/Hakkuh do not break a hit.
+    Longer keyword matches score higher and multiple matches accumulate.
     """
-    q = (message or "").lower().strip()
+    q = _normalize(message)
     if not q:
         return None
 
@@ -48,7 +59,7 @@ def get_relevant_mhjh_context(message: str):
     for block in _load_mhjh_knowledge():
         score = 0
         for keyword in block.get("keywords", []):
-            key = keyword.lower().strip()
+            key = _normalize(keyword)
             if key and key in q:
                 score += max(1, len(key.split()))
 
