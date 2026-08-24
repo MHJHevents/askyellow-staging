@@ -90,10 +90,22 @@ def call_yello_llm(
         })
 
     if hints.get("web_context"):
+        if hints.get("web_search_succeeded"):
+            web_status = (
+                "De internetzoekactie voor deze vraag is geslaagd en de resultaten hieronder zijn beschikbaar. "
+                "Beantwoord de vraag met deze resultaten. Zeg niet dat je geen internet of zoekresultaten kunt bekijken. "
+                "Negeer eventuele eerdere chatantwoorden waarin je dat wel beweerde."
+            )
+        else:
+            web_status = (
+                "De internetzoekactie leverde geen bruikbare resultaten op of mislukte. "
+                "Zeg dat kort en eerlijk en verzin geen actuele informatie."
+            )
         messages.append({
             "role": "system",
             "content": (
-                "Actuele internetzoekcontext:\n"
+                f"{web_status}\n"
+                "Internetzoekcontext:\n"
                 f"{hints['web_context']}\n"
                 "Gebruik alleen resultaten die de vraag daadwerkelijk ondersteunen. Verwijs in het antwoord met [1], [2], enzovoort "
                 "naar gebruikte resultaten. Bij een conflict over MHJH is de officiële MHJH-kennis leidend. "
