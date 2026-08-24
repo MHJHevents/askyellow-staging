@@ -273,11 +273,11 @@ def gabber_yello_chat(payload: dict, request: Request):
 
     try:
         answer, _ = call_gabber_yello_llm(
-        question=message,
-        language="nl",
-        kb_answer=mhjh_context,
-        sql_match=None,
-        hints=hints,
+            question=message,
+            language="nl",
+            kb_answer=mhjh_context,
+            sql_match=None,
+            hints=hints,
             history=history,
         )
     except Exception as exc:
