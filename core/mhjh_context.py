@@ -14,6 +14,7 @@ import unicodedata
 KNOWLEDGE_DIR = Path(__file__).resolve().parent.parent / "gabber_yello" / "knowledge"
 KNOWLEDGE_FILES = (
     "mhjh.json",
+    "gabber_yello.json",
     "event.json",
     "mijnmhjh.json",
     "lootjesjacht.json",
