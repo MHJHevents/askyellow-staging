@@ -31,6 +31,7 @@ from image_shared import (
 )
 
 from llm import call_yellowmind_llm, call_gabber_yello_llm
+from gabber_web import format_web_context, search_web_for_gabber, should_search_web
 from gabber_memory import (
     clear_gabber_memories,
     format_gabber_memories,
@@ -360,6 +361,22 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
                 "\n".join(recent_user_context + [message])
             )
 
+    web_results = []
+    if should_search_web(message, bool(mhjh_context)):
+        try:
+            web_results = search_web_for_gabber(message)
+            web_context = format_web_context(web_results)
+            hints["web_context"] = web_context or (
+                "De internetzoekopdracht leverde geen bruikbare resultaten op. "
+                "Zeg eerlijk dat je online niets betrouwbaars hebt gevonden."
+            )
+        except Exception as exc:
+            print(f"Gabber Yello web search failed: {type(exc).__name__}: {exc}")
+            hints["web_context"] = (
+                "De internetzoekopdracht is mislukt. Zeg kort dat online zoeken nu niet lukte "
+                "en verzin geen actuele informatie."
+            )
+
     try:
         answer, _ = call_gabber_yello_llm(
             question=message,
@@ -388,6 +405,11 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
         "personality": "gabber_yello",
         "knowledge_used": bool(mhjh_context),
         "memory_used": bool(hints.get("personal_memory")),
+        "web_used": bool(web_results),
+        "sources": [
+            {"title": item["title"], "url": item["url"]}
+            for item in web_results
+        ],
         "member_recognized": bool(member),
     }
 
