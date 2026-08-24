@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query, Request
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query, Request, BackgroundTasks
 from chat_engine.db import get_conn
 from core.time_context import build_time_context, build_llm_time_hint
 from core.askyellow_context import get_relevant_askyellow_context
@@ -31,6 +31,11 @@ from image_shared import (
 )
 
 from llm import call_yellowmind_llm, call_gabber_yello_llm
+from gabber_memory import (
+    format_gabber_memories,
+    get_gabber_memories,
+    learn_gabber_memories,
+)
 
 router = APIRouter()
 
@@ -230,7 +235,7 @@ def chat(payload: dict):
 
 
 @router.post("/gabber-yello/chat")
-def gabber_yello_chat(payload: dict, request: Request):
+def gabber_yello_chat(payload: dict, request: Request, background_tasks: BackgroundTasks):
     """Private staging test route for Gabber Yello.
 
     Uses the same Yello Core and database-backed memory functions as YellowMind,
@@ -257,6 +262,14 @@ def gabber_yello_chat(payload: dict, request: Request):
         display_name = member["nickname"] or member["first_name"]
         if display_name:
             hints["user_name"] = display_name
+        try:
+            memory_context = format_gabber_memories(
+                get_gabber_memories(conversation_session)
+            )
+            if memory_context:
+                hints["personal_memory"] = memory_context
+        except Exception as exc:
+            print(f"Gabber Yello memory loading failed: {type(exc).__name__}: {exc}")
 
     if _needs_time_context(message):
         hints["time_context"] = build_time_context()
@@ -283,6 +296,16 @@ def gabber_yello_chat(payload: dict, request: Request):
         }
 
     mhjh_context = get_relevant_mhjh_context(message)
+    if not mhjh_context and history:
+        recent_user_context = [
+            item["content"]
+            for item in history[-8:]
+            if item.get("role") == "user" and isinstance(item.get("content"), str)
+        ]
+        if recent_user_context:
+            mhjh_context = get_relevant_mhjh_context(
+                "\n".join(recent_user_context + [message])
+            )
 
     try:
         answer, _ = call_gabber_yello_llm(
@@ -301,10 +324,17 @@ def gabber_yello_chat(payload: dict, request: Request):
         answer = "⚠️ Gabber Yello had ff een vastlopertje. Vraag het nog eens."
 
     store_message_pair(conversation_session, message, answer)
+    if member:
+        background_tasks.add_task(
+            learn_gabber_memories,
+            conversation_session,
+            message,
+        )
     return {
         "reply": answer,
         "personality": "gabber_yello",
         "knowledge_used": bool(mhjh_context),
+        "memory_used": bool(hints.get("personal_memory")),
         "member_recognized": bool(member),
     }
 
