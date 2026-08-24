@@ -52,6 +52,16 @@ def _gabber_test_session_id(session_id: str) -> str:
     return f"gabber-yello-test:{session_id}"
 
 
+def _is_identity_question(text: str) -> bool:
+    q = " ".join((text or "").lower().split())
+    patterns = (
+        "wie ben ik", "weet je wie ik ben", "ken je mij", "herken je mij",
+        "met wie praat je", "met wie chat je", "weet je mijn naam",
+        "hoe heet ik", "wat is mijn naam",
+    )
+    return any(pattern in q for pattern in patterns)
+
+
 def _verified_mhjh_member(request: Request, payload: dict) -> dict | None:
     """Verify the minimal MijnMHJH identity forwarded by the MHJH server."""
     context_json = payload.get("member_context")
@@ -239,16 +249,40 @@ def gabber_yello_chat(payload: dict, request: Request):
         hints["time_context"] = build_time_context()
         hints["time_hint"] = build_llm_time_hint()
 
+    if _is_identity_question(message):
+        if member:
+            display_name = member["first_name"] or member["nickname"]
+            answer = (
+                f"Jazeker maat! Jij bent {display_name} 😎 "
+                "Je bent ingelogd via MijnMHJH, dus ik weet met wie ik sta te ouwehoeren."
+            )
+        else:
+            answer = (
+                "Nog niet maat — je bent hier niet ingelogd via MijnMHJH. "
+                "Log daar ff in, dan weet ik met wie ik sta te ouwehoeren 😎"
+            )
+        store_message_pair(test_session_id, message, answer)
+        return {
+            "reply": answer,
+            "personality": "gabber_yello",
+            "knowledge_used": False,
+            "member_recognized": bool(member),
+        }
+
     mhjh_context = get_relevant_mhjh_context(message)
 
-    answer, _ = call_gabber_yello_llm(
+    try:
+        answer, _ = call_gabber_yello_llm(
         question=message,
         language="nl",
         kb_answer=mhjh_context,
         sql_match=None,
         hints=hints,
-        history=history,
-    )
+            history=history,
+        )
+    except Exception as exc:
+        print(f"Gabber Yello model call failed: {type(exc).__name__}: {exc}")
+        answer = "Ik liep ff vast maat, maar ik ben er nog. Gooi 'm nog een keer!"
 
     if not answer:
         answer = "⚠️ Gabber Yello had ff een vastlopertje. Vraag het nog eens."
