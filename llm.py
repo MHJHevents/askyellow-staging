@@ -92,7 +92,13 @@ def call_yello_llm(
     if hints.get("web_context"):
         messages.append({
             "role": "system",
-            "content": hints["web_context"]
+            "content": (
+                "Actuele internetzoekcontext:\n"
+                f"{hints['web_context']}\n"
+                "Gebruik alleen resultaten die de vraag daadwerkelijk ondersteunen. Verwijs in het antwoord met [1], [2], enzovoort "
+                "naar gebruikte resultaten. Bij een conflict over MHJH is de officiële MHJH-kennis leidend. "
+                "Verzin geen bron, URL, actualiteit of zoekresultaat."
+            )
         })
 
     if history:
