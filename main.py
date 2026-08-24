@@ -43,14 +43,12 @@ from chat_shared import (
     get_history_for_model, store_message_pair,
 )
 from routes.health import router as health_router
-from routes.gabber_yello_voice_test import router as gabber_yello_voice_test_router
 from affiliate_search import router as affiliate_router
 
 from search_v2.router import router as search_v2_router
 app.include_router(search_v2_router)
 
 app.include_router(health_router, include_in_schema=False)
-app.include_router(gabber_yello_voice_test_router)
 app.include_router(chat_router)
 app.include_router(image_generate)
 app.include_router(ask_router)
