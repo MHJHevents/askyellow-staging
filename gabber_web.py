@@ -9,6 +9,12 @@ _EXPLICIT = (
     "zoek op internet", "zoek eens op", "zoek dit op", "google dit",
     "kun je dit opzoeken", "kun je online zoeken", "check online",
 )
+_INTERNET_REQUEST = re.compile(
+    r"\b(zoek(?:en)?|vind(?:en)?|opzoek(?:en)?|check(?:en)?)\b.{0,45}\b(internet|online|web)\b"
+    r"|\b(internet|online|web)\b.{0,45}\b(zoek(?:en)?|vind(?:en)?|opzoek(?:en)?|check(?:en)?)\b",
+    re.IGNORECASE,
+)
+
 _CURRENT = (
     "laatste nieuws", "nieuwste nieuws", "meest recente", "actueel",
     "vandaag bekend", "deze week bekend", "net bekendgemaakt",
@@ -18,7 +24,7 @@ _CURRENT = (
 
 def should_search_web(message: str, has_official_mhjh_context: bool) -> bool:
     q = " ".join((message or "").lower().split())
-    if any(trigger in q for trigger in _EXPLICIT):
+    if any(trigger in q for trigger in _EXPLICIT) or _INTERNET_REQUEST.search(q):
         return True
     if has_official_mhjh_context:
         return False
