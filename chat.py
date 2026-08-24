@@ -1,9 +1,15 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query, Request
 from chat_engine.db import get_conn
 from core.time_context import build_time_context, build_llm_time_hint
 from core.askyellow_context import get_relevant_askyellow_context
 from core.mhjh_context import get_relevant_mhjh_context
 from core.capability_router import detect_capability
+
+import hashlib
+import hmac
+import json
+import os
+import time
 
 from chat_shared import (
     store_message_pair,
@@ -44,6 +50,47 @@ def _needs_time_context(text: str) -> bool:
 def _gabber_test_session_id(session_id: str) -> str:
     """Keep Gabber Yello test history isolated from YellowMind history."""
     return f"gabber-yello-test:{session_id}"
+
+
+def _verified_mhjh_member(request: Request, payload: dict) -> dict | None:
+    """Verify the minimal MijnMHJH identity forwarded by the MHJH server."""
+    context_json = payload.get("member_context")
+    timestamp = request.headers.get("x-mhjh-timestamp", "")
+    supplied = request.headers.get("x-mhjh-signature", "")
+    secret = os.getenv("GABBER_YELLO_BRIDGE_SECRET", "").strip()
+
+    if not isinstance(context_json, str) or not timestamp or not supplied or len(secret) < 32:
+        return None
+
+    try:
+        issued_at = int(timestamp)
+    except (TypeError, ValueError):
+        return None
+
+    if abs(int(time.time()) - issued_at) > 300:
+        return None
+
+    expected = hmac.new(
+        secret.encode("utf-8"),
+        f"{timestamp}.{context_json}".encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    if not hmac.compare_digest(expected, supplied):
+        return None
+
+    try:
+        member = json.loads(context_json)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+    if not isinstance(member, dict) or not member.get("public_id"):
+        return None
+
+    return {
+        "public_id": str(member["public_id"])[:80],
+        "first_name": str(member.get("first_name") or "").strip()[:80],
+        "nickname": str(member.get("nickname") or "").strip()[:80],
+    }
 
 
 @router.get("/chat/history")
@@ -160,7 +207,7 @@ def chat(payload: dict):
 
 
 @router.post("/gabber-yello/chat")
-def gabber_yello_chat(payload: dict):
+def gabber_yello_chat(payload: dict, request: Request):
     """Private staging test route for Gabber Yello.
 
     Uses the same Yello Core and database-backed memory functions as YellowMind,
@@ -182,6 +229,12 @@ def gabber_yello_chat(payload: dict):
         conn.close()
 
     hints = {}
+    member = _verified_mhjh_member(request, payload)
+    if member:
+        display_name = member["first_name"] or member["nickname"]
+        if display_name:
+            hints["user_name"] = display_name
+
     if _needs_time_context(message):
         hints["time_context"] = build_time_context()
         hints["time_hint"] = build_llm_time_hint()
@@ -205,6 +258,7 @@ def gabber_yello_chat(payload: dict):
         "reply": answer,
         "personality": "gabber_yello",
         "knowledge_used": bool(mhjh_context),
+        "member_recognized": bool(member),
     }
 
 
