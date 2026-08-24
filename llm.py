@@ -48,6 +48,16 @@ def call_yello_llm(
             "content": f"De gebruiker heet {hints['user_name']}. Gebruik de naam alleen wanneer dat natuurlijk past."
         })
 
+    if hints.get("personal_memory"):
+        messages.append({
+            "role": "system",
+            "content": (
+                "Bruikbare herinneringen die deze gebruiker eerder zelf heeft verteld:\n"
+                f"{hints['personal_memory']}\n"
+                "Gebruik ze alleen wanneer relevant, noem ze niet allemaal tegelijk en presenteer ze nooit als officiële MHJH-feiten."
+            )
+        })
+
     if hints.get("time_context"):
         messages.append({
             "role": "system",
