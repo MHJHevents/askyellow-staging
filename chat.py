@@ -366,12 +366,14 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
         try:
             web_results = search_web_for_gabber(message)
             web_context = format_web_context(web_results)
+            hints["web_search_succeeded"] = bool(web_results)
             hints["web_context"] = web_context or (
                 "De internetzoekopdracht leverde geen bruikbare resultaten op. "
                 "Zeg eerlijk dat je online niets betrouwbaars hebt gevonden."
             )
         except Exception as exc:
             print(f"Gabber Yello web search failed: {type(exc).__name__}: {exc}")
+            hints["web_search_succeeded"] = False
             hints["web_context"] = (
                 "De internetzoekopdracht is mislukt. Zeg kort dat online zoeken nu niet lukte "
                 "en verzin geen actuele informatie."
