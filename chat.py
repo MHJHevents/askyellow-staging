@@ -32,6 +32,7 @@ from image_shared import (
 
 from llm import call_yellowmind_llm, call_gabber_yello_llm
 from gabber_memory import (
+    clear_gabber_memories,
     format_gabber_memories,
     get_gabber_memories,
     learn_gabber_memories,
@@ -55,6 +56,26 @@ def _needs_time_context(text: str) -> bool:
 def _gabber_test_session_id(session_id: str) -> str:
     """Keep Gabber Yello test history isolated from YellowMind history."""
     return f"gabber-yello-test:{session_id}"
+
+
+def _is_memory_question(text: str) -> bool:
+    q = " ".join((text or "").lower().split())
+    patterns = (
+        "wat onthoud je over mij", "wat weet je over mij",
+        "wat heb je over mij onthouden", "ken je mij al een beetje",
+    )
+    return any(pattern in q for pattern in patterns)
+
+
+def _is_forget_all_request(text: str) -> bool:
+    q = " ".join((text or "").lower().split())
+    patterns = (
+        "vergeet alles wat je over mij weet",
+        "vergeet alles wat je over mij onthoudt",
+        "wis mijn geheugen",
+        "verwijder mijn herinneringen",
+    )
+    return any(pattern in q for pattern in patterns)
 
 
 def _is_identity_question(text: str) -> bool:
@@ -258,14 +279,14 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
         conn.close()
 
     hints = {}
+    member_memories = []
     if member:
         display_name = member["nickname"] or member["first_name"]
         if display_name:
             hints["user_name"] = display_name
         try:
-            memory_context = format_gabber_memories(
-                get_gabber_memories(conversation_session)
-            )
+            member_memories = get_gabber_memories(conversation_session)
+            memory_context = format_gabber_memories(member_memories)
             if memory_context:
                 hints["personal_memory"] = memory_context
         except Exception as exc:
@@ -274,6 +295,38 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
     if _needs_time_context(message):
         hints["time_context"] = build_time_context()
         hints["time_hint"] = build_llm_time_hint()
+
+    if _is_forget_all_request(message):
+        if member:
+            clear_gabber_memories(conversation_session)
+            answer = "Is goed maat — mijn persoonlijke herinneringen over jou zijn gewist."
+        else:
+            answer = "Je bent niet ingelogd maat, dus ik heb geen accountgeheugen om te wissen."
+        store_message_pair(conversation_session, message, answer)
+        return {
+            "reply": answer,
+            "personality": "gabber_yello",
+            "knowledge_used": False,
+            "memory_used": False,
+            "member_recognized": bool(member),
+        }
+
+    if _is_memory_question(message):
+        if member_memories:
+            facts = "\n".join(f"- {item['value']}" for item in member_memories)
+            answer = f"Dit heb ik van onze gesprekken onthouden, maat:\n{facts}"
+        elif member:
+            answer = "Nog niet veel maat — we zijn elkaar nog aan het leren kennen 😎"
+        else:
+            answer = "Je bent niet ingelogd via MijnMHJH, dus ik heb geen persoonlijk accountgeheugen voor je."
+        store_message_pair(conversation_session, message, answer)
+        return {
+            "reply": answer,
+            "personality": "gabber_yello",
+            "knowledge_used": False,
+            "memory_used": bool(member_memories),
+            "member_recognized": bool(member),
+        }
 
     if _is_identity_question(message):
         if member:
