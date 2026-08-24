@@ -393,6 +393,13 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
     if not answer:
         answer = "⚠️ Gabber Yello had ff een vastlopertje. Vraag het nog eens."
 
+    if web_results:
+        source_lines = [
+            f"[{index}] {item['title']} — {item['url']}"
+            for index, item in enumerate(web_results, start=1)
+        ]
+        answer = f"{answer}\n\nBronnen:\n" + "\n".join(source_lines)
+
     store_message_pair(conversation_session, message, answer)
     if member:
         background_tasks.add_task(
