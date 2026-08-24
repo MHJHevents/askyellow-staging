@@ -45,6 +45,21 @@ def format_gabber_memories(memories: list[dict]) -> str | None:
     return "\n".join(f"- {item['value']}" for item in memories)
 
 
+def clear_gabber_memories(member_key: str) -> int:
+    conn = get_conn()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            "DELETE FROM gabber_yello_memories WHERE member_key = %s",
+            (member_key,),
+        )
+        deleted = cur.rowcount
+        conn.commit()
+        return deleted
+    finally:
+        conn.close()
+
+
 def learn_gabber_memories(member_key: str, user_text: str) -> None:
     """Extract at most two explicit, non-sensitive durable facts in the background."""
     text = " ".join((user_text or "").split())
