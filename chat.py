@@ -103,6 +103,19 @@ def _verified_mhjh_member(request: Request, payload: dict) -> dict | None:
     }
 
 
+def _gabber_conversation_session(member: dict | None, browser_session_id: str) -> str:
+    if not member:
+        return _gabber_test_session_id(browser_session_id)
+
+    secret = os.getenv("GABBER_YELLO_BRIDGE_SECRET", "").strip()
+    digest = hmac.new(
+        secret.encode("utf-8"),
+        member["public_id"].encode("utf-8"),
+        hashlib.sha256,
+    ).hexdigest()
+    return f"gabber-yello-member:{digest}"
+
+
 @router.get("/chat/history")
 def chat_history(session_id: str, day: str | None = Query(default=None)):
     conn = get_conn()
@@ -230,16 +243,16 @@ def gabber_yello_chat(payload: dict, request: Request):
     if not session_id or not message:
         raise HTTPException(status_code=400, detail="session_id of message ontbreekt")
 
-    test_session_id = _gabber_test_session_id(session_id)
+    member = _verified_mhjh_member(request, payload)
+    conversation_session = _gabber_conversation_session(member, session_id)
 
     conn = get_conn()
     try:
-        history = get_history_for_llm(conn, test_session_id)
+        history = get_history_for_llm(conn, conversation_session)
     finally:
         conn.close()
 
     hints = {}
-    member = _verified_mhjh_member(request, payload)
     if member:
         display_name = member["nickname"] or member["first_name"]
         if display_name:
@@ -261,7 +274,7 @@ def gabber_yello_chat(payload: dict, request: Request):
                 "Nog niet maat — je bent hier niet ingelogd via MijnMHJH. "
                 "Log daar ff in, dan weet ik met wie ik sta te ouwehoeren 😎"
             )
-        store_message_pair(test_session_id, message, answer)
+        store_message_pair(conversation_session, message, answer)
         return {
             "reply": answer,
             "personality": "gabber_yello",
@@ -287,7 +300,7 @@ def gabber_yello_chat(payload: dict, request: Request):
     if not answer:
         answer = "⚠️ Gabber Yello had ff een vastlopertje. Vraag het nog eens."
 
-    store_message_pair(test_session_id, message, answer)
+    store_message_pair(conversation_session, message, answer)
     return {
         "reply": answer,
         "personality": "gabber_yello",
@@ -296,13 +309,37 @@ def gabber_yello_chat(payload: dict, request: Request):
     }
 
 
-@router.post("/gabber-yello/reset")
-def reset_gabber_yello(payload: dict):
+@router.post("/gabber-yello/history")
+def gabber_yello_history(payload: dict, request: Request):
     session_id = (payload.get("session_id") or "").strip()
     if not session_id:
         raise HTTPException(status_code=400, detail="session_id ontbreekt")
 
-    test_session_id = _gabber_test_session_id(session_id)
+    member = _verified_mhjh_member(request, payload)
+    if not member:
+        return {"messages": [], "member_recognized": False}
+
+    conversation_session = _gabber_conversation_session(member, session_id)
+    conn = get_conn()
+    try:
+        messages = get_history_for_llm(conn, conversation_session, limit=30)
+    finally:
+        conn.close()
+
+    return {
+        "messages": messages,
+        "member_recognized": True,
+    }
+
+
+@router.post("/gabber-yello/reset")
+def reset_gabber_yello(payload: dict, request: Request):
+    session_id = (payload.get("session_id") or "").strip()
+    if not session_id:
+        raise HTTPException(status_code=400, detail="session_id ontbreekt")
+
+    member = _verified_mhjh_member(request, payload)
+    conversation_session = _gabber_conversation_session(member, session_id)
     conn = get_conn()
     try:
         cur = conn.cursor()
@@ -313,7 +350,7 @@ def reset_gabber_yello(payload: dict):
             WHERE session_id = %s
               AND ended_at IS NULL
             """,
-            (test_session_id,)
+            (conversation_session,)
         )
         conn.commit()
     finally:
