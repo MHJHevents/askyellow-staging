@@ -66,7 +66,7 @@ def get_relevant_mhjh_context(message: str):
         score = 0
         for keyword in block.get("keywords", []):
             key = _normalize(keyword)
-            if key and key in q:
+            if key and f" {key} " in f" {q} ":
                 score += max(1, len(key.split()))
 
         if score > 0:
