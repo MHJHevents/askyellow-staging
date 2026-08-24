@@ -241,7 +241,7 @@ def gabber_yello_chat(payload: dict, request: Request):
     hints = {}
     member = _verified_mhjh_member(request, payload)
     if member:
-        display_name = member["first_name"] or member["nickname"]
+        display_name = member["nickname"] or member["first_name"]
         if display_name:
             hints["user_name"] = display_name
 
@@ -251,7 +251,7 @@ def gabber_yello_chat(payload: dict, request: Request):
 
     if _is_identity_question(message):
         if member:
-            display_name = member["first_name"] or member["nickname"]
+            display_name = member["nickname"] or member["first_name"]
             answer = (
                 f"Jazeker maat! Jij bent {display_name} 😎 "
                 "Je bent ingelogd via MijnMHJH, dus ik weet met wie ik sta te ouwehoeren."
