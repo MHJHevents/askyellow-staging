@@ -78,7 +78,8 @@ def call_yello_llm(
             knowledge_instruction = (
                 "Deze MHJH-kennis is voor deze vraag leidend. Geef concrete namen, betekenissen en geschiedenis uit dit blok "
                 "wanneer de gebruiker daarom vraagt; vervang die niet door algemene woorden over sfeer, community of vibes. "
-                "Corrigeer eerdere vage of onjuiste chatantwoorden stilzwijgend en verzin niets buiten dit blok."
+                "Corrigeer eerdere vage of onjuiste chatantwoorden stilzwijgend en verzin niets buiten dit blok. "
+                "Als dit blok een gevraagd praktisch feit concreet bevat, mag je niet zeggen dat dit onbekend of nog niet bekendgemaakt is."
             )
         messages.append({
             "role": "system",
