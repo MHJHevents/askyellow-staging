@@ -61,12 +61,21 @@ def call_yello_llm(
         })
 
     if kb_answer:
+        knowledge_instruction = (
+            "Gebruik deze informatie als bron voor het antwoord, maar formuleer natuurlijk en passend bij het gesprek."
+        )
+        if knowledge_label == "MHJH":
+            knowledge_instruction = (
+                "Deze MHJH-kennis is voor deze vraag leidend. Geef concrete namen, betekenissen en geschiedenis uit dit blok "
+                "wanneer de gebruiker daarom vraagt; vervang die niet door algemene woorden over sfeer, community of vibes. "
+                "Corrigeer eerdere vage of onjuiste chatantwoorden stilzwijgend en verzin niets buiten dit blok."
+            )
         messages.append({
             "role": "system",
             "content": (
                 f"Relevante {knowledge_label}-kennis voor deze vraag:\n"
                 f"{kb_answer}\n"
-                "Gebruik deze informatie als bron voor het antwoord, maar formuleer natuurlijk en passend bij het gesprek."
+                f"{knowledge_instruction}"
             )
         })
 
