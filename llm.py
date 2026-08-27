@@ -17,6 +17,7 @@ GABBER_AUTO_FOLLOWUP = re.compile(
     r"Deel(?: ze)? gerust\b[^.!?]*[.!?]*|"
     r"Ik ben benieuwd\b[^.!?]*[.!?]*|"
     r"Het is altijd leuk om\b[^.!?]*[.!?]*|"
+    r"Dat kan (?:ook )?(?:heel )?interessant zijn[.!?]*|"
     r"Heb je\b[^.!?]*[?]+|"
     r"En jij(?: dan)?\??|"
     r"Wat (?:heb|is|zijn)\b[^.!?]*[?]+|"
