@@ -42,6 +42,12 @@ QUERY_ALIASES = (
     (("eerste echte dj", "eerste dj", "wie leerde draaien"), " pionier dj gizmo invloed geschiedenis "),
 )
 
+NAME_IGNORE = {
+    "als", "ben", "dat", "deze", "dit", "een", "heb", "het", "hoe", "ik",
+    "mijn", "maar", "nee", "vertel", "waar", "wanneer", "wat", "weet", "welke",
+    "wie", "wil", "ja", "jij",
+}
+
 
 def _normalize(text: str) -> str:
     value = unicodedata.normalize("NFKD", (text or "").lower())
@@ -96,6 +102,32 @@ def _disambiguation_note(text: str) -> str | None:
             "Schrijf hem niet toe aan Gizmo en voeg geen andere maker toe. De naam Komt Tie Dan He van MHJH is een culturele verwijzing naar deze plaat."
         )
     return None
+
+
+def _unknown_name_note(text: str, selected_context: str) -> str | None:
+    """Flag capitalized names that are absent from the selected knowledge."""
+    candidates = []
+    for raw in re.findall(r"\b[A-ZÀ-Ý][A-Za-zÀ-ÿ0-9_-]{2,}\b", text or ""):
+        name = _normalize(raw)
+        if name and name not in NAME_IGNORE and name not in candidates:
+            candidates.append(name)
+
+    if not candidates:
+        return None
+
+    context_normalized = _normalize(selected_context)
+    unknown = [name for name in candidates if f" {name} " not in f" {context_normalized} "]
+    if not unknown:
+        return None
+
+    display = ", ".join(unknown)
+    return (
+        f"HARD NAAMVANGRAIL — ONBEKENDE NAAM/TERM: {display}. "
+        "De genoemde naam komt niet voor in de geselecteerde gecontroleerde kennis. Leid geen identiteit af uit andere "
+        "woorden in de vraag, zoals pensioen, feest, dj of optreden. Noem deze persoon niet bekend, Haags, Rotterdams, "
+        "artiest, pionier of icoon en verzin geen loopbaan of datum. Zeg kort dat je de naam niet betrouwbaar kunt plaatsen "
+        "en het moment niet weet. Eén gerichte vraag welke persoon wordt bedoeld is toegestaan."
+    )
 
 
 @lru_cache(maxsize=1)
@@ -214,5 +246,7 @@ def get_relevant_mhjh_context(message: str):
     hardcore = _hardcore_matches(message)
 
     anchor = _disambiguation_note(message)
-    combined = ([anchor] if anchor else []) + operational + hardcore
+    selected = operational + hardcore
+    unknown_name = _unknown_name_note(message, "\n\n".join(selected))
+    combined = ([unknown_name] if unknown_name else []) + ([anchor] if anchor else []) + selected
     return "\n\n".join(combined) if combined else None
