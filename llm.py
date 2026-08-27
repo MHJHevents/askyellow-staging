@@ -3,12 +3,30 @@ import os
 
 from core.personalities import get_personality_profile
 from token_usage import log_ai_token_usage
+import re
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 if not OPENAI_API_KEY:
     raise RuntimeError("OPENAI_API_KEY ontbreekt")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
+
+GABBER_AUTO_FOLLOWUP = re.compile(
+    r"(?:\n\s*){0,2}(?:"
+    r"Als je (?:meer|nog|specifieke).*?(?:laat het me weten|kan ik .*|hoor ik het graag)[!.?]?|"
+    r"Heb je (?:nog|zelf|meer|ook|een favoriete|specifieke).*?[?]|"
+    r"En jij(?: dan)?\??|"
+    r"Wat is jouw .*?[?]|"
+    r"Ben je benieuwd .*?[?]|"
+    r"Wil je (?:meer|nog).*?[?]"
+    r")\s*$",
+    re.IGNORECASE | re.DOTALL,
+)
+
+
+def _remove_gabber_auto_followup(answer: str) -> str:
+    """Strip only canned conversation tails; keep targeted clarification."""
+    return GABBER_AUTO_FOLLOWUP.sub("", answer or "").rstrip()
 
 YELLO_CORE_PROMPT = """
 Beantwoord de gebruiker helder, behulpzaam en eerlijk.
@@ -137,6 +155,9 @@ def call_yello_llm(
 
     if not final_answer:
         return "⚠️ Ik had even een denkfoutje, kun je dat nog eens vragen?", usage
+
+    if personality == "gabber_yello":
+        final_answer = _remove_gabber_auto_followup(final_answer)
 
     return final_answer, usage
 
