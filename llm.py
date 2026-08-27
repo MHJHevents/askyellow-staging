@@ -13,20 +13,29 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 GABBER_AUTO_FOLLOWUP = re.compile(
     r"(?:\n\s*){0,2}(?:"
-    r"Als je .*?(?:laat het me weten|hoor ik het graag)[!.?]?|"
-    r"Heb je (?:nog|zelf|meer|ook|een favoriete|specifieke).*?[?]|"
+    r"Als je\b[^.!?]*(?:laat(?: het me| maar)? weten|deel ze gerust|hoor ik het graag)[.!?]*|"
+    r"Deel(?: ze)? gerust\b[^.!?]*[.!?]*|"
+    r"Ik ben benieuwd\b[^.!?]*[.!?]*|"
+    r"Het is altijd leuk om\b[^.!?]*[.!?]*|"
+    r"Heb je\b[^.!?]*[?]+|"
     r"En jij(?: dan)?\??|"
-    r"Wat is jouw .*?[?]|"
-    r"Ben je benieuwd .*?[?]|"
-    r"Wil je (?:meer|nog).*?[?]"
+    r"Wat (?:heb|is|zijn)\b[^.!?]*[?]+|"
+    r"Ben je benieuwd\b[^.!?]*[?]+|"
+    r"Wil je\b[^.!?]*[?]+|"
+    r"Laat(?: het me| maar)? weten\b[^.!?]*[.!?]*"
     r")\s*$",
-    re.IGNORECASE | re.DOTALL,
+    re.IGNORECASE,
 )
 
 
 def _remove_gabber_auto_followup(answer: str) -> str:
     """Strip only canned conversation tails; keep targeted clarification."""
-    return GABBER_AUTO_FOLLOWUP.sub("", answer or "").rstrip()
+    cleaned = (answer or "").rstrip()
+    while True:
+        shorter = GABBER_AUTO_FOLLOWUP.sub("", cleaned).rstrip()
+        if shorter == cleaned:
+            return cleaned
+        cleaned = shorter
 
 YELLO_CORE_PROMPT = """
 Beantwoord de gebruiker helder, behulpzaam en eerlijk.
@@ -100,6 +109,17 @@ def call_yello_llm(
                 f"Relevante {knowledge_label}-kennis voor deze vraag:\n"
                 f"{kb_answer}\n"
                 f"{knowledge_instruction}"
+            )
+        })
+    elif knowledge_label == "MHJH":
+        messages.append({
+            "role": "system",
+            "content": (
+                "Voor deze vraag is geen relevante, door MHJH gecontroleerde kennis gevonden. "
+                "Als de gebruiker vraagt wie een persoon is, wanneer een onbekende gebeurtenis plaatsvond, "
+                "of naar specifieke credits of anekdotes vraagt, verzin dan geen identiteit, beroep, regio, reputatie, "
+                "loopbaan, datum of sceneverband. Zeg kort dat je die persoon of gebeurtenis niet betrouwbaar kunt plaatsen "
+                "en dat je het zou moeten nakijken. Algemene smalltalk mag wel, zolang je geen concrete feiten bedenkt."
             )
         })
 
