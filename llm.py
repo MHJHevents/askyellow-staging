@@ -24,6 +24,8 @@ GABBER_AUTO_FOLLOWUP = re.compile(
     r"Ben je benieuwd\b[^.!?]*[?]+|"
     r"Wil je\b[^.!?]*[?]+|"
     r"Laat(?: het me| me| maar)? weten\b[^.!?]*[.!?]*"
+    r"|Als je\b[^.!?]*(?:kan ik|zou ik)[^.!?]*[.!?]*"
+    r"|Verhalen van mensen\b[^.!?]*[.!?]*"
     r")\s*$",
     re.IGNORECASE,
 )
