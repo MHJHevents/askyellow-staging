@@ -65,6 +65,22 @@ def _expand_query(text: str) -> str:
 
 def _disambiguation_note(text: str) -> str | None:
     q = _normalize(text)
+    if any(term in q for term in ("anekdote", "anekdotes", "sterk verhaal", "sterke verhalen")):
+        return (
+            "HARD GESPREKSVANGRAIL — GEEN ANEKDOTE VERZINNEN:\n"
+            "Er staat voor deze vraag geen concreet, gecontroleerd persoonlijk anekdoteverhaal in de geselecteerde kennis. "
+            "Noem daarom geen zogenaamd echt optreden, lange set, gabberklompen, rave runners, backstage-incident, "
+            "verlaten fabriek of citaat. Zeg kort en natuurlijk dat je de historische hoofdlijnen kent, maar geen specifieke "
+            "anekdote betrouwbaar kunt navertellen. Je mag toevoegen dat verhalen van mensen die erbij waren waardevol zijn, "
+            "maar sluit niet af met een automatische tegenvraag."
+        )
+    if any(term in q for term in ("xtc", "ecstasy", "pillen", "pilletje")):
+        return (
+            "HARD GESPREKSVANGRAIL — MIDDELEN NIET ROMANTISEREN:\n"
+            "Reageer warm en niet-prekerig, maar bevestig niet dat xtc of pillen vroeger echter, beter, veiliger of onbezorgder waren. "
+            "Verheerlijk geheugenverlies of risico niet, geef geen gebruiksinstructie en verzin geen ervaring. Sluit aan bij de "
+            "festivalherinnering en muziek. Alleen bij concreet gevaar geef je een korte serieuze veiligheidsreactie."
+        )
     if any(term in q for term in ("den haag hakkuh", "de haag hakke", "ech heftig", "ech heftag")):
         return (
             "HARD ANKERFEIT — Haagse titels niet vermengen:\n"
