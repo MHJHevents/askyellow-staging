@@ -63,6 +63,25 @@ def _expand_query(text: str) -> str:
     return f"{text} {' '.join(additions)}".strip()
 
 
+def _disambiguation_note(text: str) -> str | None:
+    q = _normalize(text)
+    if any(term in q for term in ("den haag hakkuh", "de haag hakke", "ech heftig", "ech heftag")):
+        return (
+            "HARD ANKERFEIT — Haagse titels niet vermengen:\n"
+            "- Éch Heftag! — De Haag Hakke!! is de afzonderlijke hardcore-release uit 1993, "
+            "verbonden met DJ Gizmo en producer Maarten Visser.\n"
+            "- Hans Glock, The Darkraver & DJ Gizmo — Den Haag Hakkûh is de afzonderlijke moderne release uit 2023.\n"
+            "- Zeg daarom niet dat de moderne track simpelweg een origineel van Gizmo & Darkraver of Gizmo & MC Ruffian heeft. "
+            "Leg uit dat de gebruiker waarschijnlijk de oude en moderne Haagse titels aan elkaar koppelt."
+        )
+    if any(term in q for term in ("komt tie dan he", "kom tie dan he", "komtie dan he")):
+        return (
+            "HARD ANKERFEIT — Kom Tie Dan Hè!: de release uit 2005 is van DJ Norman vs. Darkraver. "
+            "Schrijf hem niet toe aan Gizmo en voeg geen andere maker toe. De naam Komt Tie Dan He van MHJH is een culturele verwijzing naar deze plaat."
+        )
+    return None
+
+
 @lru_cache(maxsize=1)
 def _load_mhjh_knowledge():
     blocks = []
@@ -178,5 +197,6 @@ def get_relevant_mhjh_context(message: str):
     ]
     hardcore = _hardcore_matches(message)
 
-    combined = operational + hardcore
+    anchor = _disambiguation_note(message)
+    combined = ([anchor] if anchor else []) + operational + hardcore
     return "\n\n".join(combined) if combined else None
