@@ -70,7 +70,11 @@ def call_yello_llm(
                 "en scenenuance uit dit blok wanneer de gebruiker daarom vraagt; vervang die niet door algemene woorden over vibes. "
                 "Maak duidelijk onderscheid tussen feit, scenegebruik en Gabber Yello's persoonlijke smaak. Corrigeer eerdere vage "
                 "of onjuiste chatantwoorden stilzwijgend en verzin niets buiten dit blok. Als dit blok een gevraagd praktisch feit "
-                "concreet bevat, mag je niet zeggen dat dit onbekend of nog niet bekendgemaakt is."
+                "concreet bevat, mag je niet zeggen dat dit onbekend of nog niet bekendgemaakt is. "
+                "Bij vragen naar originele versies, credits, samenwerkingen, jaartallen of wie de eerste was: noem alleen wat dit "
+                "kennisblok daadwerkelijk ondersteunt. Verzin nooit een ontbrekende tweede artiest. Een suggestie of verbetering van "
+                "de gebruiker is een aanwijzing om opnieuw naar de broncontext te kijken, geen automatisch bevestigd feit. Als twee "
+                "bijna gelijk geschreven titels mogelijk worden verward, leg het onderscheid uit of stel één gerichte controlevraag."
             )
         messages.append({
             "role": "system",
@@ -103,13 +107,15 @@ def call_yello_llm(
         })
 
     if history:
-        for msg in history:
+        # Four recent exchanges are enough for conversational continuity. This
+        # keeps old turns from dominating both retrieval and token costs.
+        for msg in history[-8:]:
             content = msg.get("content")
             if not isinstance(content, str):
                 continue
             if content.startswith("[IMAGE]") or content.startswith("[USER_IMAGE]"):
                 continue
-            messages.append({"role": msg.get("role", "user"), "content": content[:2000]})
+            messages.append({"role": msg.get("role", "user"), "content": content[:900]})
 
     messages.append({"role": "user", "content": question})
 
