@@ -18,7 +18,7 @@ GABBER_AUTO_FOLLOWUP = re.compile(
     r"Ik ben benieuwd\b[^.!?]*[.!?]*|"
     r"Het is altijd leuk om\b[^.!?]*[.!?]*|"
     r"Dat kan (?:ook )?(?:heel )?interessant zijn[.!?]*|"
-    r"Heb je\b[^.!?]*[?]+|"
+    r"Heb (?:je|jij)\b[^.!?]*[?]+|"
     r"En jij(?: dan)?\??|"
     r"Wat (?:heb|is|zijn)\b[^.!?]*[?]+|"
     r"Ben je benieuwd\b[^.!?]*[?]+|"
