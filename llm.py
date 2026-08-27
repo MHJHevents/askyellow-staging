@@ -13,7 +13,7 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 GABBER_AUTO_FOLLOWUP = re.compile(
     r"(?:\n\s*){0,2}(?:"
-    r"Als je (?:meer|nog|specifieke).*?(?:laat het me weten|kan ik .*|hoor ik het graag)[!.?]?|"
+    r"Als je .*?(?:laat het me weten|hoor ik het graag)[!.?]?|"
     r"Heb je (?:nog|zelf|meer|ook|een favoriete|specifieke).*?[?]|"
     r"En jij(?: dan)?\??|"
     r"Wat is jouw .*?[?]|"
