@@ -120,7 +120,11 @@ def call_yello_llm(
     messages.append({"role": "user", "content": question})
 
     model = os.getenv("YELLO_CHAT_MODEL", "gpt-4o-mini")
-    ai = client.chat.completions.create(model=model, messages=messages)
+    request_options = {"model": model, "messages": messages}
+    if personality == "gabber_yello":
+        # Keep the banter, reduce confident improvisation around scene history.
+        request_options["temperature"] = 0.35
+    ai = client.chat.completions.create(**request_options)
     usage = log_ai_token_usage(ai, feature=f"chat:{personality}", model=model)
 
     final_answer = None
