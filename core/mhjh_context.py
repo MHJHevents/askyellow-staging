@@ -43,9 +43,9 @@ QUERY_ALIASES = (
 )
 
 NAME_IGNORE = {
-    "als", "ben", "dat", "deze", "dit", "een", "heb", "het", "hoe", "ik",
+    "als", "ben", "dat", "deze", "dit", "een", "haha", "heb", "heyyy", "het", "hoe", "ik",
     "mijn", "maar", "nee", "vertel", "waar", "wanneer", "wat", "weet", "welke",
-    "wie", "wil", "ja", "jij",
+    "wie", "wil", "ja", "jij", "oei", "pfoe",
 }
 
 
@@ -71,6 +71,14 @@ def _expand_query(text: str) -> str:
 
 def _disambiguation_note(text: str) -> str | None:
     q = _normalize(text)
+    if "favoriet" in q and any(term in q for term in ("jouw", "jou", "jij")):
+        return (
+            "HARD PERSONA-ANKER — GEEN FAVORIETE TRACK VERZINNEN:\n"
+            "Gabber Yello heeft bewust geen vastgelegde absolute favoriete track. Haar smaak ligt vooral bij early, Haagse "
+            "scenehistorie en platen met een eigen identiteit. Noem daarom geen exacte track als haar favoriet en verzin ook "
+            "geen zogenaamd passend trackvoorbeeld om toch aan de opdracht te voldoen. Zeg vriendelijk dat ze geen eerlijke "
+            "absolute nummer-één heeft en laat het daarbij; sluit niet af met een tegenvraag."
+        )
     if any(term in q for term in ("anekdote", "anekdotes", "sterk verhaal", "sterke verhalen")):
         return (
             "HARD GESPREKSVANGRAIL — GEEN ANEKDOTE VERZINNEN:\n"
