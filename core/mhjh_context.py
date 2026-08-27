@@ -35,6 +35,13 @@ STOPWORDS = {
     "ik", "jij", "je", "mij", "mijn", "er", "om", "op", "in", "te",
 }
 
+QUERY_ALIASES = (
+    (("den haag hakkuh", "de haag hakke", "haag hakke"), " ech heftag gizmo hans glock darkraver 1993 2023 "),
+    (("ech heftig", "echt heftig", "ech heftag"), " ech heftag de haag hakke gizmo maarten visser "),
+    (("komt tie dan he", "kom tie dan he", "komtie dan he"), " dj norman darkraver kom tie dan he 2005 "),
+    (("eerste echte dj", "eerste dj", "wie leerde draaien"), " pionier dj gizmo invloed geschiedenis "),
+)
+
 
 def _normalize(text: str) -> str:
     value = unicodedata.normalize("NFKD", (text or "").lower())
@@ -45,6 +52,15 @@ def _normalize(text: str) -> str:
 
 def _terms(text: str) -> set[str]:
     return {word for word in _normalize(text).split() if len(word) >= 3 and word not in STOPWORDS}
+
+
+def _expand_query(text: str) -> str:
+    normalized = _normalize(text)
+    additions = []
+    for variants, expansion in QUERY_ALIASES:
+        if any(_normalize(variant) in normalized for variant in variants):
+            additions.append(expansion)
+    return f"{text} {' '.join(additions)}".strip()
 
 
 @lru_cache(maxsize=1)
@@ -83,9 +99,9 @@ def _load_hardcore_sections():
                 })
 
         for line in text.splitlines():
-            if line.startswith("## "):
+            if line.startswith("## ") or line.startswith("### "):
                 store_section()
-                current_title = re.sub(r"^##\s+(?:\d+\.\s*)?", "", line).strip()
+                current_title = re.sub(r"^#{2,3}\s+(?:\d+\.\s*)?", "", line).strip()
                 current_lines = []
             elif line.startswith("# "):
                 continue
@@ -96,9 +112,10 @@ def _load_hardcore_sections():
     return tuple(sections)
 
 
-def _hardcore_matches(message: str, limit: int = 4) -> list[str]:
-    normalized = _normalize(message)
-    query_terms = _terms(message)
+def _hardcore_matches(message: str, limit: int = 3) -> list[str]:
+    expanded = _expand_query(message)
+    normalized = _normalize(expanded)
+    query_terms = _terms(expanded)
     if not normalized or not query_terms:
         return []
 
@@ -126,14 +143,14 @@ def _hardcore_matches(message: str, limit: int = 4) -> list[str]:
             continue
         excerpt = f"### {section['title']}\n{section['body']}"
         # Hard cap prevents one broad question from producing a giant prompt.
-        if used_chars + len(excerpt) > 12000:
-            remaining = 12000 - used_chars
+        if used_chars + len(excerpt) > 7000:
+            remaining = 7000 - used_chars
             if remaining < 500:
                 break
             excerpt = excerpt[:remaining].rsplit("\n", 1)[0]
         excerpts.append(excerpt)
         used_chars += len(excerpt)
-        if used_chars >= 12000:
+        if used_chars >= 7000:
             break
     return excerpts
 
