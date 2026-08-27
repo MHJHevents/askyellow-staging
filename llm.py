@@ -13,8 +13,8 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 GABBER_AUTO_FOLLOWUP = re.compile(
     r"(?:\n\s*){0,2}(?:"
-    r"Als je\b[^.!?]*(?:laat(?: het me| maar)? weten|deel ze gerust|hoor ik het graag)[.!?]*|"
-    r"Deel(?: ze)? gerust\b[^.!?]*[.!?]*|"
+    r"Als je\b[^.!?]*(?:laat(?: het me| me| maar)? weten|deel (?:ze|het) gerust|hoor ik het graag)[.!?]*|"
+    r"Deel(?: ze| het)? gerust\b[^.!?]*[.!?]*|"
     r"Ik ben benieuwd\b[^.!?]*[.!?]*|"
     r"Het is altijd leuk om\b[^.!?]*[.!?]*|"
     r"Dat kan (?:ook )?(?:heel )?interessant zijn[.!?]*|"
@@ -23,7 +23,7 @@ GABBER_AUTO_FOLLOWUP = re.compile(
     r"Wat (?:heb|is|zijn)\b[^.!?]*[?]+|"
     r"Ben je benieuwd\b[^.!?]*[?]+|"
     r"Wil je\b[^.!?]*[?]+|"
-    r"Laat(?: het me| maar)? weten\b[^.!?]*[.!?]*"
+    r"Laat(?: het me| me| maar)? weten\b[^.!?]*[.!?]*"
     r")\s*$",
     re.IGNORECASE,
 )
