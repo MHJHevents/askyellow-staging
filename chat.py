@@ -102,15 +102,39 @@ def _verified_mhjh_member(request: Request, payload: dict) -> dict | None:
     supplied = request.headers.get("x-mhjh-signature", "")
     secret = os.getenv("GABBER_YELLO_BRIDGE_SECRET", "").strip()
 
-    if not isinstance(context_json, str) or not timestamp or not supplied or len(secret) < 32:
+    def reject(reason: str) -> None:
+        print("GABBER_MEMBER_AUTH_REJECT " + json.dumps({
+            "event": "GABBER_MEMBER_AUTH_REJECT",
+            "reason": reason,
+            "has_context": isinstance(context_json, str),
+            "context_bytes": len(context_json.encode("utf-8")) if isinstance(context_json, str) else 0,
+            "has_timestamp": bool(timestamp),
+            "has_signature": bool(supplied),
+            "secret_configured": len(secret) >= 32,
+            "secret_fingerprint": hashlib.sha256(secret.encode("utf-8")).hexdigest()[:12] if secret else "",
+        }, separators=(",", ":")), flush=True)
+
+    if not isinstance(context_json, str):
+        reject("context_missing")
+        return None
+    if not timestamp:
+        reject("timestamp_missing")
+        return None
+    if not supplied:
+        reject("signature_missing")
+        return None
+    if len(secret) < 32:
+        reject("secret_missing_or_short")
         return None
 
     try:
         issued_at = int(timestamp)
     except (TypeError, ValueError):
+        reject("timestamp_invalid")
         return None
 
     if abs(int(time.time()) - issued_at) > 300:
+        reject("timestamp_expired")
         return None
 
     expected = hmac.new(
@@ -119,14 +143,20 @@ def _verified_mhjh_member(request: Request, payload: dict) -> dict | None:
         hashlib.sha256,
     ).hexdigest()
     if not hmac.compare_digest(expected, supplied):
+        reject("signature_mismatch")
         return None
 
     try:
         member = json.loads(context_json)
     except (TypeError, ValueError, json.JSONDecodeError):
+        reject("context_invalid_json")
         return None
 
-    if not isinstance(member, dict) or not member.get("public_id"):
+    if not isinstance(member, dict):
+        reject("context_not_object")
+        return None
+    if not member.get("public_id"):
+        reject("public_id_missing")
         return None
 
     return {
