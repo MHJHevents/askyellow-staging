@@ -38,6 +38,12 @@ from gabber_memory import (
     get_gabber_memories,
     learn_gabber_memories,
 )
+from music_recognition import (
+    MAX_UPLOAD_BYTES,
+    MusicRecognitionError,
+    check_music_rate_limit,
+    recognize_music,
+)
 
 router = APIRouter()
 
@@ -141,6 +147,57 @@ def _gabber_conversation_session(member: dict | None, browser_session_id: str) -
         hashlib.sha256,
     ).hexdigest()
     return f"gabber-yello-member:{digest}"
+
+
+@router.post("/gabber-yello/recognize-music")
+def gabber_yello_recognize_music(
+    request: Request,
+    member_context: str = Form(...),
+    file: UploadFile = File(...),
+):
+    member = _verified_mhjh_member(request, {"member_context": member_context})
+    if not member:
+        raise HTTPException(status_code=401, detail="member_required")
+
+    content_type = (file.content_type or "").lower()
+    audio_bytes = file.file.read(MAX_UPLOAD_BYTES + 1)
+    file.file.close()
+    if not audio_bytes or len(audio_bytes) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="audio_too_large")
+
+    if not check_music_rate_limit(member["public_id"]):
+        raise HTTPException(status_code=429, detail="music_rate_limit")
+
+    try:
+        result = recognize_music(
+            member_public_id=member["public_id"],
+            filename=file.filename or "fragment",
+            content_type=content_type,
+            audio_bytes=audio_bytes,
+        )
+    except MusicRecognitionError as exc:
+        code = str(exc)
+        status = 503 if code in {"audd_not_configured", "provider_unavailable"} else 422
+        raise HTTPException(status_code=status, detail=code) from exc
+
+    if not result.get("matched"):
+        return {
+            "matched": False,
+            "reply": (
+                "Ik krijg hier geen betrouwbare herkenning uit, maat. "
+                "Het kan een live-edit, mash-up of te kort fragment zijn."
+            ),
+        }
+
+    artist = result["artist"]
+    title = result["title"]
+    return {
+        **result,
+        "reply": (
+            f"Maat, dit lijkt op {artist} – {title} 🔥 "
+            "Bij een live-edit, remix of mash-up kan dit wel de oorspronkelijke track zijn."
+        ),
+    }
 
 
 @router.get("/chat/history")
