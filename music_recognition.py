@@ -91,6 +91,23 @@ def recognize_music(
         raise MusicRecognitionError("provider_unavailable") from exc
 
     if payload.get("status") != "success":
+        provider_error = payload.get("error") if isinstance(payload.get("error"), dict) else {}
+        error_code = str(provider_error.get("error_code") or payload.get("error_code") or "")[:80]
+        error_message = str(
+            provider_error.get("error_message")
+            or provider_error.get("message")
+            or payload.get("error_message")
+            or payload.get("message")
+            or ""
+        ).strip()[:300]
+        print("MUSIC_RECOGNITION_PROVIDER_ERROR " + json.dumps({
+            "event": "MUSIC_RECOGNITION_PROVIDER_ERROR",
+            "provider": "audd",
+            "error_code": error_code,
+            "error_message": error_message,
+            "mime": mime,
+            "filename_extension": os.path.splitext(safe_name)[1].lower()[:12],
+        }, ensure_ascii=False, separators=(",", ":")), flush=True)
         _usage_log(member_public_id, matched=False, size=len(audio_bytes), status="provider_rejected")
         raise MusicRecognitionError("provider_rejected")
 
