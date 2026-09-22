@@ -96,7 +96,7 @@ def call_yello_llm(
         )
         if knowledge_label == "MHJH":
             knowledge_instruction = (
-                "Deze door MHJH gecontroleerde kennis is voor deze vraag leidend. Geef concrete namen, betekenissen, geschiedenis "
+                "Bij woorden als recent, recente, recentste, nieuwste, actueel of huidige gaat het om actuele informatie: behandel een ouder jaartal uit dit kennisblok nooit als een recente release. Als er geen geslaagde webcontext is, zeg eerlijk dat je geen actuele release betrouwbaar kunt bevestigen. Deze door MHJH gecontroleerde kennis is voor deze vraag leidend. Geef concrete namen, betekenissen, geschiedenis "
                 "en scenenuance uit dit blok wanneer de gebruiker daarom vraagt; vervang die niet door algemene woorden over vibes. "
                 "Maak duidelijk onderscheid tussen feit, scenegebruik en Gabber Yello's persoonlijke smaak. Corrigeer eerdere vage "
                 "of onjuiste chatantwoorden stilzwijgend en verzin niets buiten dit blok. Als dit blok een gevraagd praktisch feit "
