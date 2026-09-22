@@ -57,20 +57,23 @@ def should_search_web(message: str, has_official_mhjh_context: bool) -> bool:
     if any(trigger in q_lower for trigger in _EXPLICIT) or _INTERNET_REQUEST.search(q):
         return True
 
-    # Reviewed MHJH knowledge remains the primary source.
-    if has_official_mhjh_context:
+    # Personal opinions and memories stay conversational.
+    if _PERSONAL_OR_OPINION.search(q):
         return False
 
-    if _PERSONAL_OR_OPINION.search(q):
+    # Current/recent questions always require a fresh web check, even when
+    # reviewed MHJH knowledge also contains an older fact about the subject.
+    if any(trigger in q_lower for trigger in _CURRENT):
+        return True
+
+    # Reviewed MHJH knowledge remains the primary source for historical facts.
+    if has_official_mhjh_context:
         return False
 
     # A bare nickname/name is ambiguous: ask for context once instead of
     # searching the wrong person (for example: "Wie is Dof?").
     if _SHORT_UNKNOWN_PERSON.fullmatch(q):
         return False
-
-    if any(trigger in q_lower for trigger in _CURRENT):
-        return True
 
     # Automatic emergency exit for a sufficiently specific factual scene
     # question for which our reviewed knowledge returned no match.
