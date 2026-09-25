@@ -263,7 +263,11 @@ def filter_gabber_event_results(results: list[dict], query: str) -> list[dict]:
         ))
         if place and not re.search(r"(?<!\w)" + re.escape(place) + r"(?!\w)", text, re.IGNORECASE):
             continue
-        if not event_signal.search(text):
+        # When a city and exact date are requested, those two checks already
+        # anchor the result to the event. Listings sometimes omit genre/event
+        # words from their title and snippet, so require the signal only for
+        # nationwide searches where there is no specific place to match.
+        if not place and not event_signal.search(text):
             continue
         if not any(_event_date_in_text(text, int(day), int(month), int(year)) for day, month, year in dates):
             continue
