@@ -460,6 +460,13 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
             web_results = search_web_for_gabber(web_query)
             if event_lookup:
                 web_results = filter_gabber_event_results(web_results, web_query)
+                if not web_results:
+                    # General search can bury exact listings under unrelated
+                    # events. Retry this verified event query against DJGuide,
+                    # while preserving the same exact date and city checks.
+                    fallback_query = f"site:djguide.nl/party {web_query}"
+                    fallback_results = search_web_for_gabber(fallback_query, limit=6)
+                    web_results = filter_gabber_event_results(fallback_results, web_query)
             lineup_overlap = find_mhjh_lineup_overlap(web_results)
             if lineup_overlap:
                 hints["mhjh_lineup_overlap"] = lineup_overlap
