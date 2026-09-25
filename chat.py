@@ -461,13 +461,14 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
             web_results = raw_web_results
             if event_lookup:
                 web_results = filter_gabber_event_results(raw_web_results, web_query)
-                if not web_results:
+                import re
+
+                is_lineup_lookup = bool(re.search(r"line[\\s-]?up|lineup", message or "", re.IGNORECASE))
+                if not web_results or is_lineup_lookup:
                     # If a city/date-matched search result names the event but
                     # omits the year or full venue in its snippet, use its title
                     # to refine the query. The refined results still pass the
                     # same exact date and city checks below.
-                    import re
-
                     place_match = re.search(
                         r"\bhardcore\s+party\s+(.+?)\s+\d{1,2}\s+[a-z]+\s+\d{4}\b",
                         web_query,
@@ -494,8 +495,10 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
                                 query_tail = web_query[date_match.end():].strip()
                                 refined_query = " ".join(part for part in (event_core, query_place, date_text, query_tail) if part)
                                 refined_results = search_web_for_gabber(refined_query, limit=6)
-                                web_results = filter_gabber_event_results(refined_results, web_query)
-                                if web_results:
+                                refined_matches = filter_gabber_event_results(refined_results, web_query)
+                                if refined_matches:
+                                    web_results = refined_matches
+                                if refined_matches:
                                     # A second search can surface a fuller artist list
                                     # whose snippet omits the date. Add it only when
                                     # the same distinctive event title and city match
