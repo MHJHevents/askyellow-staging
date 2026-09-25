@@ -20,6 +20,8 @@ _CURRENT = (
     "vandaag bekend", "deze week bekend", "net bekendgemaakt",
     "huidige agenda", "aankomende optredens", "treedt op", "treed op",
     "wanneer is het", "wanneer vindt", "is er nog", "bestaat nog",
+    "dit weekend", "komend weekend", "aankomend weekend", "volgend weekend",
+    "aankomende feesten", "komende feesten", "feestjes dit weekend", "feesten dit weekend",
 )
 
 # Only factual misses get an automatic internet fallback. Personal memories,
