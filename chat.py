@@ -487,10 +487,34 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
                             title_date = re.search(r"\b\d{1,2}\s+[a-z]+\b", title, re.IGNORECASE)
                             event_name = title[:title_date.start()].strip(" -–—…") if title_date else ""
                             if event_name:
-                                refined_query = f"{event_name} {place} {date_text} line-up"
+                                query_place = "" if re.search(r"(?<!\\w)" + re.escape(place) + r"(?!\\w)", event_name, re.IGNORECASE) else place
+                                query_tail = web_query[date_match.end():].strip()
+                                refined_query = " ".join(part for part in (event_name, query_place, date_text, query_tail) if part)
                                 refined_results = search_web_for_gabber(refined_query, limit=6)
                                 web_results = filter_gabber_event_results(refined_results, web_query)
                                 if web_results:
+                                    # A second search can surface a fuller artist list
+                                    # whose snippet omits the date. Add it only when
+                                    # the same distinctive event title and city match
+                                    # an already date-confirmed result.
+                                    lineup_query = f"{event_name} {query_place} {date_text} complete line-up"
+                                    lineup_results = search_web_for_gabber(lineup_query, limit=6)
+                                    stop_words = {"the", "a", "an", "de", "het", "huize", "maas", "hardcore", "party", "feest", "line", "up", *place.lower().split()}
+                                    event_tokens = [token for token in re.findall(r"[a-z0-9]+", event_name.lower()) if token not in stop_words]
+                                    required_matches = 2 if len(event_tokens) > 1 else 1
+                                    known_urls = {item.get("url") for item in web_results}
+                                    for item in lineup_results:
+                                        if item.get("url") in known_urls:
+                                            continue
+                                        listing_text = " ".join((item.get("title", ""), item.get("snippet", "")))
+                                        if not re.search(r"(?<!\\w)" + re.escape(place) + r"(?!\\w)", listing_text, re.IGNORECASE):
+                                            continue
+                                        if len([token for token in event_tokens if re.search(r"(?<!\\w)" + re.escape(token) + r"(?!\\w)", listing_text, re.IGNORECASE)]) < required_matches:
+                                            continue
+                                        if not re.search(r"line[\\s-]?up|lineup|artists?|artiesten|djs?", listing_text, re.IGNORECASE):
+                                            continue
+                                        web_results.append(item)
+                                        known_urls.add(item.get("url"))
                                     break
                     if not web_results:
                         # General search can bury exact listings under unrelated
