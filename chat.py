@@ -457,16 +457,48 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
             hints["time_context"] = build_time_context()
     if should_search_web(web_query, bool(mhjh_context)):
         try:
-            web_results = search_web_for_gabber(web_query)
+            raw_web_results = search_web_for_gabber(web_query)
+            web_results = raw_web_results
             if event_lookup:
-                web_results = filter_gabber_event_results(web_results, web_query)
+                web_results = filter_gabber_event_results(raw_web_results, web_query)
                 if not web_results:
-                    # General search can bury exact listings under unrelated
-                    # events. Retry this verified event query against DJGuide,
-                    # while preserving the same exact date and city checks.
-                    fallback_query = f"site:djguide.nl/party {web_query}"
-                    fallback_results = search_web_for_gabber(fallback_query, limit=6)
-                    web_results = filter_gabber_event_results(fallback_results, web_query)
+                    # If a city/date-matched search result names the event but
+                    # omits the year or full venue in its snippet, use its title
+                    # to refine the query. The refined results still pass the
+                    # same exact date and city checks below.
+                    import re
+
+                    place_match = re.search(
+                        r"\\bhardcore\\s+party\\s+(.+?)\\s+\\d{1,2}\\s+[a-z]+\\s+\\d{4}\\b",
+                        web_query,
+                        re.IGNORECASE,
+                    )
+                    date_match = re.search(r"\\b\\d{1,2}\\s+[a-z]+\\s+\\d{4}\\b", web_query, re.IGNORECASE)
+                    if place_match and date_match:
+                        place = place_match.group(1).strip()
+                        date_text = date_match.group(0)
+                        for item in raw_web_results:
+                            result_text = " ".join((item.get("title", ""), item.get("snippet", "")))
+                            if not re.search(r"(?<!\\w)" + re.escape(place) + r"(?!\\w)", result_text, re.IGNORECASE):
+                                continue
+                            if not re.search(r"\\b" + re.escape(date_text.split()[0]) + r"\\s+[a-z]+\\b", result_text, re.IGNORECASE):
+                                continue
+                            title = item.get("title", "")
+                            title_date = re.search(r"\\b\\d{1,2}\\s+[a-z]+\\b", title, re.IGNORECASE)
+                            event_name = title[:title_date.start()].strip(" -–—…") if title_date else ""
+                            if event_name:
+                                refined_query = f"{event_name} {place} {date_text} line-up"
+                                refined_results = search_web_for_gabber(refined_query, limit=6)
+                                web_results = filter_gabber_event_results(refined_results, web_query)
+                                if web_results:
+                                    break
+                    if not web_results:
+                        # General search can bury exact listings under unrelated
+                        # events. Retry against DJGuide while keeping the same
+                        # exact date and city checks.
+                        fallback_query = f"site:djguide.nl/party {web_query}"
+                        fallback_results = search_web_for_gabber(fallback_query, limit=6)
+                        web_results = filter_gabber_event_results(fallback_results, web_query)
             lineup_overlap = find_mhjh_lineup_overlap(web_results)
             if lineup_overlap:
                 hints["mhjh_lineup_overlap"] = lineup_overlap
