@@ -463,7 +463,7 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
                 web_results = filter_gabber_event_results(raw_web_results, web_query)
                 import re
 
-                is_lineup_lookup = bool(re.search(r"line[\\s-]?up|lineup", message or "", re.IGNORECASE))
+                is_lineup_lookup = bool(re.search(r"line[\s-]?up|lineup", message or "", re.IGNORECASE))
                 if not web_results or is_lineup_lookup:
                     # If a city/date-matched search result names the event but
                     # omits the year or full venue in its snippet, use its title
