@@ -455,7 +455,7 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
         hints["event_lookup_query"] = web_query
         if not hints.get("time_context"):
             hints["time_context"] = build_time_context()
-    if should_search_web(web_query, bool(mhjh_context)):
+    if event_lookup or should_search_web(message, bool(mhjh_context)):
         try:
             raw_web_results = search_web_for_gabber(web_query)
             web_results = raw_web_results
