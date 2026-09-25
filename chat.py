@@ -31,7 +31,7 @@ from image_shared import (
 )
 
 from llm import call_yellowmind_llm, call_gabber_yello_llm
-from gabber_web import build_gabber_web_query, find_mhjh_lineup_overlap, format_web_context, get_official_mhjh_ticket_url, search_web_for_gabber, should_search_web
+from gabber_web import build_gabber_web_query, filter_gabber_event_results, find_mhjh_lineup_overlap, format_web_context, get_official_mhjh_ticket_url, search_web_for_gabber, should_search_web
 from gabber_memory import (
     clear_gabber_memories,
     format_gabber_memories,
@@ -458,6 +458,8 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
     if should_search_web(web_query, bool(mhjh_context)):
         try:
             web_results = search_web_for_gabber(web_query)
+            if event_lookup:
+                web_results = filter_gabber_event_results(web_results, web_query)
             lineup_overlap = find_mhjh_lineup_overlap(web_results)
             if lineup_overlap:
                 hints["mhjh_lineup_overlap"] = lineup_overlap

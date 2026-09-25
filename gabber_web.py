@@ -177,6 +177,79 @@ def _weekend_dates(text: str, today=None) -> str:
     return f"{saturday:%d-%m-%Y} en {sunday:%d-%m-%Y}"
 
 
+
+_EVENT_MONTH_NAMES = {
+    1: ("january", "jan", "januari"),
+    2: ("february", "feb", "februari"),
+    3: ("march", "mar", "maart"),
+    4: ("april", "apr"),
+    5: ("may", "mei"),
+    6: ("june", "jun", "juni"),
+    7: ("july", "jul", "juli"),
+    8: ("august", "aug", "augustus"),
+    9: ("september", "sep"),
+    10: ("october", "oct", "oktober", "okt"),
+    11: ("november", "nov"),
+    12: ("december", "dec"),
+}
+
+
+def _event_date_in_text(text: str, day: int, month: int, year: int) -> bool:
+    import unicodedata
+
+    value = unicodedata.normalize("NFKD", text or "").lower()
+    value = "".join(ch for ch in value if not unicodedata.combining(ch))
+    day_token = rf"0?{day}"
+    month_token = rf"0?{month}"
+    year_token = re.escape(str(year))
+    numeric_patterns = (
+        rf"\b{day_token}[-/.]{month_token}[-/.]{year_token}\b",
+        rf"\b{year_token}[-/.]{month_token}[-/.]{day_token}\b",
+    )
+    month_names = "|".join(re.escape(name) for name in _EVENT_MONTH_NAMES.get(month, ()))
+    word_patterns = (
+        rf"\b{day_token}\s+(?:{month_names})\s+{year_token}\b",
+        rf"\b(?:{month_names})\s+{day_token}(?:st|nd|rd|th)?[,]?\s+{year_token}\b",
+    )
+    return any(re.search(pattern, value, re.IGNORECASE) for pattern in numeric_patterns + word_patterns)
+
+
+def filter_gabber_event_results(results: list[dict], query: str) -> list[dict]:
+    """Keep only event results that support the requested date and, if local, place."""
+    dates = re.findall(r"\b(\d{2})-(\d{2})-(\d{4})\b", query or "")
+    if not dates:
+        return results or []
+
+    place_match = re.search(
+        r"\bin\s+(.+?)(?:,\s*nederland)?\s+(?:dit|komend|aankomend|volgend)\s+weekend\b",
+        query or "",
+        re.IGNORECASE,
+    )
+    place = place_match.group(1).strip(" ,.!?") if place_match else ""
+    if place.lower() == "nederland":
+        place = ""
+
+    event_signal = re.compile(
+        r"\b(?:line[\s–-]?up|festival|gabber|hardcore|party|feest|event|evenement|optreden|agenda)\b",
+        re.IGNORECASE,
+    )
+    kept = []
+    for item in results or []:
+        text = " ".join((
+            str(item.get("title") or ""),
+            str(item.get("snippet") or ""),
+            str(item.get("url") or ""),
+        ))
+        if place and not re.search(r"(?<!\w)" + re.escape(place) + r"(?!\w)", text, re.IGNORECASE):
+            continue
+        if not event_signal.search(text):
+            continue
+        if not any(_event_date_in_text(text, int(day), int(month), int(year)) for day, month, year in dates):
+            continue
+        kept.append(item)
+    return kept
+
+
 def build_gabber_web_query(message: str, history: list[dict] | None = None, today=None) -> tuple[str, bool]:
     """Build a Dutch, local, date-anchored query for current party searches.
 
