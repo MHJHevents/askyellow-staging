@@ -216,12 +216,33 @@ def _event_date_in_text(text: str, day: int, month: int, year: int) -> bool:
 
 def filter_gabber_event_results(results: list[dict], query: str) -> list[dict]:
     """Keep only event results that support the requested date and, if local, place."""
-    dates = re.findall(r"\b(\d{2})-(\d{2})-(\d{4})\b", query or "")
+    dates = [
+        (int(day), int(month), int(year))
+        for day, month, year in re.findall(r"\b(\d{2})-(\d{2})-(\d{4})\b", query or "")
+    ]
+    month_lookup = {
+        name: month
+        for month, names in _EVENT_MONTH_NAMES.items()
+        for name in names
+    }
+    month_pattern = "|".join(
+        re.escape(name)
+        for names in _EVENT_MONTH_NAMES.values()
+        for name in names
+    )
+    for day, month_name, year in re.findall(
+        rf"\b(\d{{1,2}})\s+({month_pattern})\s+(\d{{4}})\b",
+        query or "",
+        re.IGNORECASE,
+    ):
+        date_tuple = (int(day), month_lookup[month_name.lower()], int(year))
+        if date_tuple not in dates:
+            dates.append(date_tuple)
     if not dates:
         return results or []
 
     place_match = re.search(
-        r"\bin\s+(.+?)(?:,\s*nederland)?\s+(?:dit|komend|aankomend|volgend)\s+weekend\b",
+        rf"\bhardcore\s+party\s+(.+?)\s+\d{{1,2}}\s+(?:{month_pattern})\s+\d{{4}}\b",
         query or "",
         re.IGNORECASE,
     )
@@ -248,6 +269,25 @@ def filter_gabber_event_results(results: list[dict], query: str) -> list[dict]:
             continue
         kept.append(item)
     return kept
+
+
+
+def _confirmed_lineup_query_names(limit: int = 3) -> list[str]:
+    """Load a few current, publicly confirmed MHJH names for targeted lookups."""
+    from pathlib import Path
+    import json
+
+    knowledge_path = Path(__file__).resolve().parent / "gabber_yello" / "knowledge" / "lineup.json"
+    try:
+        with knowledge_path.open("r", encoding="utf-8") as handle:
+            artists = json.load(handle).get("confirmed_artists", [])
+    except (OSError, ValueError, TypeError):
+        return []
+    return [
+        str(item.get("name")).strip()
+        for item in artists
+        if isinstance(item, dict) and str(item.get("name") or "").strip()
+    ][:limit]
 
 
 def build_gabber_web_query(message: str, history: list[dict] | None = None, today=None) -> tuple[str, bool]:
@@ -280,9 +320,18 @@ def build_gabber_web_query(message: str, history: list[dict] | None = None, toda
     period = _EVENT_PERIOD.search(event_text)
     period_label = period.group(0).lower() if period else "dit weekend"
     dates = _weekend_dates(event_text, today) if "weekend" in period_label else ""
-    date_part = f" {dates}" if dates else ""
-    topic = "line-up artiesten en speelgegevens" if is_event_detail else "feesten"
-    query = f"hardcore gabber {topic} in {location}{region_suffix} {period_label}{date_part}"
+    first_date = re.search(r"\b(\d{2})-(\d{2})-(\d{4})\b", dates)
+    if first_date:
+        day, month, year = (int(value) for value in first_date.groups())
+        month_name = _EVENT_MONTH_NAMES[month][0]
+        date_part = f"{day} {month_name} {year}"
+    else:
+        date_part = period_label
+    query = f"hardcore party {location} {date_part}"
+    if is_event_detail:
+        query += " line-up"
+        for artist in _confirmed_lineup_query_names()[:2]:
+            query += f" {artist}"
     return query[:300], True
 
 
