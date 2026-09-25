@@ -487,7 +487,7 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
                             title_date = re.search(r"\b\d{1,2}\s+[a-z]+\b", title, re.IGNORECASE)
                             event_name = title[:title_date.start()].strip(" -–—…") if title_date else ""
                             if event_name:
-                                query_place = "" if re.search(r"(?<!\\w)" + re.escape(place) + r"(?!\\w)", event_name, re.IGNORECASE) else place
+                                query_place = "" if re.search(r"(?<!\w)" + re.escape(place) + r"(?!\w)", event_name, re.IGNORECASE) else place
                                 query_tail = web_query[date_match.end():].strip()
                                 refined_query = " ".join(part for part in (event_name, query_place, date_text, query_tail) if part)
                                 refined_results = search_web_for_gabber(refined_query, limit=6)
@@ -507,11 +507,11 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
                                         if item.get("url") in known_urls:
                                             continue
                                         listing_text = " ".join((item.get("title", ""), item.get("snippet", "")))
-                                        if not re.search(r"(?<!\\w)" + re.escape(place) + r"(?!\\w)", listing_text, re.IGNORECASE):
+                                        if not re.search(r"(?<!\w)" + re.escape(place) + r"(?!\w)", listing_text, re.IGNORECASE):
                                             continue
-                                        if len([token for token in event_tokens if re.search(r"(?<!\\w)" + re.escape(token) + r"(?!\\w)", listing_text, re.IGNORECASE)]) < required_matches:
+                                        if len([token for token in event_tokens if re.search(r"(?<!\w)" + re.escape(token) + r"(?!\w)", listing_text, re.IGNORECASE)]) < required_matches:
                                             continue
-                                        if not re.search(r"line[\\s-]?up|lineup|artists?|artiesten|djs?", listing_text, re.IGNORECASE):
+                                        if not re.search(r"line[\s-]?up|lineup|artists?|artiesten|djs?", listing_text, re.IGNORECASE):
                                             continue
                                         web_results.append(item)
                                         known_urls.add(item.get("url"))
