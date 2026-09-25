@@ -469,22 +469,22 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
                     import re
 
                     place_match = re.search(
-                        r"\\bhardcore\\s+party\\s+(.+?)\\s+\\d{1,2}\\s+[a-z]+\\s+\\d{4}\\b",
+                        r"\bhardcore\s+party\s+(.+?)\s+\d{1,2}\s+[a-z]+\s+\d{4}\b",
                         web_query,
                         re.IGNORECASE,
                     )
-                    date_match = re.search(r"\\b\\d{1,2}\\s+[a-z]+\\s+\\d{4}\\b", web_query, re.IGNORECASE)
+                    date_match = re.search(r"\b\d{1,2}\s+[a-z]+\s+\d{4}\b", web_query, re.IGNORECASE)
                     if place_match and date_match:
                         place = place_match.group(1).strip()
                         date_text = date_match.group(0)
                         for item in raw_web_results:
                             result_text = " ".join((item.get("title", ""), item.get("snippet", "")))
-                            if not re.search(r"(?<!\\w)" + re.escape(place) + r"(?!\\w)", result_text, re.IGNORECASE):
+                            if not re.search(r"(?<!\w)" + re.escape(place) + r"(?!\w)", result_text, re.IGNORECASE):
                                 continue
-                            if not re.search(r"\\b" + re.escape(date_text.split()[0]) + r"\\s+[a-z]+\\b", result_text, re.IGNORECASE):
+                            if not re.search(r"\b" + re.escape(date_text.split()[0]) + r"\s+[a-z]+\b", result_text, re.IGNORECASE):
                                 continue
                             title = item.get("title", "")
-                            title_date = re.search(r"\\b\\d{1,2}\\s+[a-z]+\\b", title, re.IGNORECASE)
+                            title_date = re.search(r"\b\d{1,2}\s+[a-z]+\b", title, re.IGNORECASE)
                             event_name = title[:title_date.start()].strip(" -–—…") if title_date else ""
                             if event_name:
                                 refined_query = f"{event_name} {place} {date_text} line-up"
