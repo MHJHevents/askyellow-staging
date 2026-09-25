@@ -148,11 +148,13 @@ def call_yello_llm(
             "role": "system",
             "content": (
                 f"{web_status}\nInternetzoekcontext:\n{hints['web_context']}\n"
-                "Gebruik alleen resultaten die de vraag daadwerkelijk ondersteunen. Verwijs met [1], [2], enzovoort. "
+                "Gebruik alleen resultaten die de vraag daadwerkelijk ondersteunen. Verwijs inline met [1], [2], enzovoort; maak zelf geen bronnenlijst of ruwe URL's, die voegt de applicatie toe. "
                 "Bij actuele evenementen-, agenda- of datumvragen zijn de gevraagde plaats en periode harde voorwaarden: noem een evenement "
                 "alleen als de zoekresultaten aantoonbaar laten zien dat het binnen die periode en regio plaatsvindt. Een toekomstige MHJH-editie "
                 "uit kennis mag nooit worden voorgesteld als iets dat dit weekend gebeurt wanneer de datum niet overeenkomt. Negeer eerdere "
                 "onjuiste assistentantwoorden en gebruik alleen de nieuwe resultaten. Bij historische MHJH-feiten blijft de officiële MHJH-kennis leidend. "
+                "Een algemene agenda-pagina of zoekresultaat zonder aantoonbare plaats, datum en evenement bevestigt geen feest; zeg dan dat je het niet kon bevestigen, niet dat er niets is. "
+                "Als er een backend-verificatie van overlap met onze eigen line-up is meegegeven, benoem die koppeling kort; zonder zo'n verificatie koppel je artiesten niet op basis van vermoedens. "
                 "Verzin geen bron, URL, datum of actualiteit."
             )
         })

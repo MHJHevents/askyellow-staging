@@ -125,12 +125,17 @@ _EVENT_PERIOD = re.compile(
     r"\b(?:vandaag|morgen|vanavond|deze\s+(?:vrijdag|zaterdag|zondag))\b",
     re.IGNORECASE,
 )
+_EVENT_DETAIL = re.compile(
+    r"\b(?:line[\s-]?up|wie\s+(?:draait|speelt|staat)|welke\s+(?:dj|artiest)|"
+    r"artiesten|namen|tickets?|kaartjes?|locatie|adres|hoe\s+laat|timetable|set[- ]tijden)\b",
+    re.IGNORECASE,
+)
 _LOCATION_PATTERNS = (
     re.compile(r"\b(?:ik|we|wij)\s+(?:woon|wonen|woonachtig)\s+in\s+([a-zà-ÿ][a-zà-ÿ'’\-]*(?:\s+[a-zà-ÿ][a-zà-ÿ'’\-]*){0,3})", re.IGNORECASE),
     re.compile(r"\b(?:in de buurt van|omgeving van|regio)\s+([a-zà-ÿ][a-zà-ÿ'’\-]*(?:\s+[a-zà-ÿ][a-zà-ÿ'’\-]*){0,3})", re.IGNORECASE),
     re.compile(r"\bin\s+((?!(?:de|het|een|dit|deze|mijn|jouw)\b)[a-zà-ÿ][a-zà-ÿ'’\-]*(?:\s+[a-zà-ÿ][a-zà-ÿ'’\-]*){0,3})", re.IGNORECASE),
 )
-_LOCATION_STOP = {"dit", "deze", "komend", "aankomend", "volgend", "weekend", "vandaag", "morgen", "vanavond", "en", "maar", "want", "daar", "dus", "we", "wij", "ik"}
+_LOCATION_STOP = {"dit", "deze", "komend", "aankomend", "volgend", "weekend", "vandaag", "morgen", "vanavond", "en", "maar", "want", "daar", "dus", "we", "wij", "ik", "is", "zijn", "er", "ook", "iets", "het", "de", "een", "hier", "in"}
 
 
 def _is_upcoming_event_question(text: str) -> bool:
@@ -185,8 +190,9 @@ def build_gabber_web_query(message: str, history: list[dict] | None = None, toda
     ]
     event_turns = [text for text in user_turns + [message or ""] if _is_upcoming_event_question(text)]
     current_location = _extract_location(message)
+    is_event_detail = bool(event_turns and _EVENT_DETAIL.search(message or ""))
     followup_event = bool(event_turns and current_location and not _is_upcoming_event_question(message))
-    if not _is_upcoming_event_question(message) and not followup_event:
+    if not _is_upcoming_event_question(message) and not followup_event and not is_event_detail:
         return " ".join((message or "").split())[:300], False
 
     event_text = (message or "") if _is_upcoming_event_question(message) else event_turns[-1]
@@ -202,5 +208,63 @@ def build_gabber_web_query(message: str, history: list[dict] | None = None, toda
     period_label = period.group(0).lower() if period else "dit weekend"
     dates = _weekend_dates(event_text, today) if "weekend" in period_label else ""
     date_part = f" {dates}" if dates else ""
-    query = f"hardcore gabber feesten in {location}{region_suffix} {period_label}{date_part}"
+    topic = "line-up artiesten en speelgegevens" if is_event_detail else "feesten"
+    query = f"hardcore gabber {topic} in {location}{region_suffix} {period_label}{date_part}"
     return query[:300], True
+
+
+
+def find_mhjh_lineup_overlap(results: list[dict]) -> list[str]:
+    """Return confirmed MHJH artists found in external event search results."""
+    from pathlib import Path
+    import json
+
+    knowledge_path = Path(__file__).resolve().parent / "gabber_yello" / "knowledge" / "lineup.json"
+    try:
+        with knowledge_path.open("r", encoding="utf-8") as handle:
+            artists = json.load(handle).get("confirmed_artists", [])
+    except (OSError, ValueError, TypeError):
+        return []
+
+    event_results = []
+    event_signal = re.compile(
+        r"\b(?:line[\s-]?up|festival|gabber party|hardcore party|event|evenement|feest|optreden|agenda)\b",
+        re.IGNORECASE,
+    )
+    for item in results or []:
+        url = str(item.get("url") or "").lower()
+        if "komttiedanhe.nl" in url or "mhjhevents.nl" in url:
+            continue
+        result_text = " ".join((
+            str(item.get("title") or ""),
+            str(item.get("snippet") or ""),
+        ))
+        if event_signal.search(result_text):
+            event_results.append(result_text.lower())
+
+    matches = []
+    for artist in artists:
+        name = str(artist.get("name") or "").strip()
+        aliases = [name, *artist.get("aliases", [])]
+        if name and any(
+            re.search(r"(?<!\w)" + re.escape(str(alias).strip().lower()) + r"(?!\w)", result_text)
+            for alias in aliases if str(alias).strip()
+            for result_text in event_results
+        ):
+            matches.append(name)
+    return matches
+
+
+
+def get_official_mhjh_ticket_url() -> str | None:
+    """Read the canonical ticket shop URL from reviewed MHJH knowledge."""
+    from pathlib import Path
+    import json
+
+    knowledge_path = Path(__file__).resolve().parent / "gabber_yello" / "knowledge" / "tickets.json"
+    try:
+        with knowledge_path.open("r", encoding="utf-8") as handle:
+            value = json.load(handle).get("official_ticket_url")
+    except (OSError, ValueError, TypeError):
+        return None
+    return value if isinstance(value, str) and value.startswith("https://") else None
