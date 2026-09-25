@@ -114,3 +114,93 @@ def format_web_context(results: list[dict]) -> str | None:
             f"URL: {item['url']}"
         )
     return "\n\n".join(parts)
+
+
+_EVENT_WORD = re.compile(
+    r"\b(?:feest(?:en|je|jes|juhs)?|fesstjuhs|festival(?:s)?|evenement(?:en)?|optreden(?:s)?|uitgaan)\b",
+    re.IGNORECASE,
+)
+_EVENT_PERIOD = re.compile(
+    r"\b(?:dit|komend|aankomend|volgend)\s+weekend\b|"
+    r"\b(?:vandaag|morgen|vanavond|deze\s+(?:vrijdag|zaterdag|zondag))\b",
+    re.IGNORECASE,
+)
+_LOCATION_PATTERNS = (
+    re.compile(r"\b(?:ik|we|wij)\s+(?:woon|wonen|woonachtig)\s+in\s+([a-zà-ÿ][a-zà-ÿ'’\-]*(?:\s+[a-zà-ÿ][a-zà-ÿ'’\-]*){0,3})", re.IGNORECASE),
+    re.compile(r"\b(?:in de buurt van|omgeving van|regio)\s+([a-zà-ÿ][a-zà-ÿ'’\-]*(?:\s+[a-zà-ÿ][a-zà-ÿ'’\-]*){0,3})", re.IGNORECASE),
+    re.compile(r"\bin\s+((?!(?:de|het|een|dit|deze|mijn|jouw)\b)[a-zà-ÿ][a-zà-ÿ'’\-]*(?:\s+[a-zà-ÿ][a-zà-ÿ'’\-]*){0,3})", re.IGNORECASE),
+)
+_LOCATION_STOP = {"dit", "deze", "komend", "aankomend", "volgend", "weekend", "vandaag", "morgen", "vanavond", "en", "maar", "want", "daar", "dus", "we", "wij", "ik"}
+
+
+def _is_upcoming_event_question(text: str) -> bool:
+    return bool(_EVENT_WORD.search(text or "") and _EVENT_PERIOD.search(text or ""))
+
+
+def _extract_location(text: str) -> str | None:
+    q = " ".join((text or "").split())
+    for pattern in _LOCATION_PATTERNS:
+        match = pattern.search(q)
+        if not match:
+            continue
+        words = []
+        for word in match.group(1).strip(" ,.!?;:").split():
+            cleaned = word.strip(" ,.!?;:")
+            if cleaned.lower() in _LOCATION_STOP:
+                break
+            words.append(cleaned)
+            if len(words) == 4:
+                break
+        if words:
+            return " ".join(words).title()
+    return None
+
+
+def _weekend_dates(text: str, today=None) -> str:
+    from datetime import date, datetime, timedelta
+    from zoneinfo import ZoneInfo
+
+    current = today or datetime.now(ZoneInfo("Europe/Amsterdam")).date()
+    if not isinstance(current, date):
+        current = date.today()
+    saturday = current + timedelta(days=(5 - current.weekday()) % 7)
+    if current.weekday() == 6:
+        saturday = current - timedelta(days=1)
+    if "volgend weekend" in (text or "").lower():
+        saturday += timedelta(days=7)
+    sunday = saturday + timedelta(days=1)
+    return f"{saturday:%d-%m-%Y} en {sunday:%d-%m-%Y}"
+
+
+def build_gabber_web_query(message: str, history: list[dict] | None = None, today=None) -> tuple[str, bool]:
+    """Build a Dutch, local, date-anchored query for current party searches.
+
+    A location correction can follow an event question, so use recent user turns
+    only; earlier assistant answers are never copied into the search query.
+    """
+    user_turns = [
+        item.get("content", "")
+        for item in (history or [])[-12:]
+        if item.get("role") == "user" and isinstance(item.get("content"), str)
+    ]
+    event_turns = [text for text in user_turns + [message or ""] if _is_upcoming_event_question(text)]
+    current_location = _extract_location(message)
+    followup_event = bool(event_turns and current_location and not _is_upcoming_event_question(message))
+    if not _is_upcoming_event_question(message) and not followup_event:
+        return " ".join((message or "").split())[:300], False
+
+    event_text = (message or "") if _is_upcoming_event_question(message) else event_turns[-1]
+    location = current_location
+    if not location:
+        for prior in reversed(user_turns):
+            location = _extract_location(prior)
+            if location:
+                break
+    location = location or "Nederland"
+    region_suffix = "" if location.lower() == "nederland" else ", Nederland"
+    period = _EVENT_PERIOD.search(event_text)
+    period_label = period.group(0).lower() if period else "dit weekend"
+    dates = _weekend_dates(event_text, today) if "weekend" in period_label else ""
+    date_part = f" {dates}" if dates else ""
+    query = f"hardcore gabber feesten in {location}{region_suffix} {period_label}{date_part}"
+    return query[:300], True

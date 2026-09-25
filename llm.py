@@ -138,12 +138,22 @@ def call_yello_llm(
                 "De internetzoekactie leverde geen bruikbare resultaten op of mislukte. "
                 "Zeg dat kort en eerlijk en verzin geen actuele informatie."
             )
+        event_query = hints.get("event_lookup_query")
+        if event_query:
+            web_status += (
+                f" Dit is een actuele evenementenzoekopdracht voor: {event_query}. "
+                "De regio en datum in deze zoekopdracht zijn harde filters."
+            )
         messages.append({
             "role": "system",
             "content": (
                 f"{web_status}\nInternetzoekcontext:\n{hints['web_context']}\n"
                 "Gebruik alleen resultaten die de vraag daadwerkelijk ondersteunen. Verwijs met [1], [2], enzovoort. "
-                "Bij een conflict over MHJH is de officiële MHJH-kennis leidend. Verzin geen bron, URL of actualiteit."
+                "Bij actuele evenementen-, agenda- of datumvragen zijn de gevraagde plaats en periode harde voorwaarden: noem een evenement "
+                "alleen als de zoekresultaten aantoonbaar laten zien dat het binnen die periode en regio plaatsvindt. Een toekomstige MHJH-editie "
+                "uit kennis mag nooit worden voorgesteld als iets dat dit weekend gebeurt wanneer de datum niet overeenkomt. Negeer eerdere "
+                "onjuiste assistentantwoorden en gebruik alleen de nieuwe resultaten. Bij historische MHJH-feiten blijft de officiële MHJH-kennis leidend. "
+                "Verzin geen bron, URL, datum of actualiteit."
             )
         })
 

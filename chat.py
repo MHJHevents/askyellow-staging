@@ -31,7 +31,7 @@ from image_shared import (
 )
 
 from llm import call_yellowmind_llm, call_gabber_yello_llm
-from gabber_web import format_web_context, search_web_for_gabber, should_search_web
+from gabber_web import build_gabber_web_query, format_web_context, search_web_for_gabber, should_search_web
 from gabber_memory import (
     clear_gabber_memories,
     format_gabber_memories,
@@ -51,7 +51,8 @@ TIME_CONTEXT_TRIGGERS = (
     "vandaag", "gisteren", "morgen", "datum", "tijd", "hoe laat",
     "welke dag", "deze week", "vorige week", "volgende week",
     "dit jaar", "vorig jaar", "volgend jaar", "recent", "actueel",
-    "momenteel", "nu", "jaarwisseling",
+    "momenteel", "nu", "jaarwisseling", "dit weekend", "komend weekend",
+    "aankomend weekend", "volgend weekend", "vanavond",
 )
 
 
@@ -449,9 +450,14 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
             )
 
     web_results = []
-    if should_search_web(message, bool(mhjh_context)):
+    web_query, event_lookup = build_gabber_web_query(message, history)
+    if event_lookup:
+        hints["event_lookup_query"] = web_query
+        if not hints.get("time_context"):
+            hints["time_context"] = build_time_context()
+    if should_search_web(web_query, bool(mhjh_context)):
         try:
-            web_results = search_web_for_gabber(message)
+            web_results = search_web_for_gabber(web_query)
             web_context = format_web_context(web_results)
             hints["web_search_succeeded"] = bool(web_results)
             hints["web_context"] = web_context or (
