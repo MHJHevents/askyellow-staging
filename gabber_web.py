@@ -117,7 +117,7 @@ def format_web_context(results: list[dict]) -> str | None:
 
 
 _EVENT_WORD = re.compile(
-    r"\b(?:feest(?:en|je|jes|juhs)?|fesstjuhs|festival(?:s)?|evenement(?:en)?|optreden(?:s)?|uitgaan)\b",
+    r"\b(?:feest(?:en|je|jes|juhs)?|fesstjuhs|party(?:'s|s)?|raves?|festival(?:s)?|evenement(?:en)?|optreden(?:s)?|uitgaan)\b",
     re.IGNORECASE,
 )
 _EVENT_PERIOD = re.compile(

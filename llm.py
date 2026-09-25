@@ -154,6 +154,7 @@ def call_yello_llm(
                 "uit kennis mag nooit worden voorgesteld als iets dat dit weekend gebeurt wanneer de datum niet overeenkomt. Negeer eerdere "
                 "onjuiste assistentantwoorden en gebruik alleen de nieuwe resultaten. Bij historische MHJH-feiten blijft de officiële MHJH-kennis leidend. "
                 "Een algemene agenda-pagina of zoekresultaat zonder aantoonbare plaats, datum en evenement bevestigt geen feest; zeg dan dat je het niet kon bevestigen, niet dat er niets is. "
+                "Noem bij een event-lookup geen datum, feest of line-up wanneer geen resultaat de gevraagde plaats en exacte periode ondersteunt; neem nooit een datum over die buiten de gevraagde periode valt. "
                 "Als er een backend-verificatie van overlap met onze eigen line-up is meegegeven, benoem die koppeling kort; zonder zo'n verificatie koppel je artiesten niet op basis van vermoedens. "
                 "Verzin geen bron, URL, datum of actualiteit."
             )
