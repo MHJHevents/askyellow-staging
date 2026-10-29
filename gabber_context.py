@@ -224,3 +224,31 @@ def resolve_gabber_context(message, history=None, today=None):
     if current and re.search(r"\bzeker\b", message, re.IGNORECASE):
         resolved += " actuele status"
     return GabberContext(resolved[:300], subjects, followup, False, current, year)
+
+
+def reviewed_edition_pause_reply(context, knowledge):
+    """Fail safely to an explicit dated KB sentence, never infer an edition status.
+
+    This is deliberately narrow: an uncited web answer must not suppress an
+    already reviewed statement that a named subject skipped the requested year.
+    No chat assertion, search snippet or invented positive edition is accepted.
+    """
+    if not knowledge or context.needs_clarification or len(context.subjects) != 1 or context.year is None:
+        return None
+    subject = context.subjects[0]
+    names = {_normalize(subject), re.sub(r"^(?:the|dj)\s+", "", _normalize(subject))}
+    for section in re.split(r"(?m)^### ", knowledge):
+        header, _, body = section.partition("\n")
+        if not any(" " + name + " " in " " + _normalize(header) + " " for name in names):
+            continue
+        body = re.sub(r"\*\*|\[[Nn]\d+(?:,?\s*[Nn]?\d+)*\]", "", body)
+        for match in re.finditer(r"[^.!?\n]*\bsloeg\s+" + str(context.year) + r"\s+over\b[^.!?\n]*[.!?]?", body, re.IGNORECASE):
+            sentence = match.group(0).strip()
+            if not any(" " + name + " " in " " + _normalize(sentence) + " " for name in names):
+                continue
+            sentence = re.sub(r"^(?:Belangrijke tijdnuance|Stand op [^:]+)\s*:\s*", "", sentence, flags=re.IGNORECASE)
+            after = body[match.end():].lstrip()
+            if after.startswith("Het is daarmee niet definitief gestopt."):
+                sentence += " Het is daarmee niet definitief gestopt."
+            return sentence
+    return None

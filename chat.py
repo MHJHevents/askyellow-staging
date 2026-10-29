@@ -31,8 +31,19 @@ from image_shared import (
 )
 
 from llm import call_yellowmind_llm, call_gabber_yello_llm
-from gabber_context import resolve_gabber_context
-from gabber_web import build_gabber_web_query, filter_gabber_event_results, filter_gabber_web_results, find_mhjh_lineup_overlap, format_web_context, get_official_mhjh_ticket_url, search_web_for_gabber, select_gabber_citations, should_search_web
+from gabber_context import resolve_gabber_context, reviewed_edition_pause_reply
+from gabber_web import (
+    UNCONFIRMED_WEB_REPLY,
+    build_gabber_web_query,
+    filter_gabber_event_results,
+    filter_gabber_web_results,
+    find_mhjh_lineup_overlap,
+    format_web_context,
+    get_official_mhjh_ticket_url,
+    search_web_for_gabber,
+    select_gabber_citations,
+    should_search_web,
+)
 from gabber_memory import (
     clear_gabber_memories,
     format_gabber_memories,
@@ -575,6 +586,8 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
         answer = "⚠️ Gabber Yello had ff een vastlopertje. Vraag het nog eens."
 
     answer, web_results = select_gabber_citations(answer, web_results)
+    if answer == UNCONFIRMED_WEB_REPLY:
+        answer = reviewed_edition_pause_reply(topic, mhjh_context) or answer
 
     if hints.get("mhjh_lineup_overlap") and web_results:
         artists = ", ".join(hints["mhjh_lineup_overlap"])

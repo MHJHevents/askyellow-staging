@@ -133,6 +133,7 @@ _SOURCE_STOPWORDS = {
 }
 _STATUS_LOOKUP = re.compile(r"\b(?:actuele status|nog steeds|bestaat|terugkeer)\b", re.IGNORECASE)
 _CITATION = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
+UNCONFIRMED_WEB_REPLY = "Ik kan dit met de gevonden bronnen niet betrouwbaar bevestigen, maat."
 
 
 def _plain(text):
@@ -205,15 +206,15 @@ def select_gabber_citations(answer, results):
         for raw in match.group(1).split(","):
             index = int(raw.strip())
             if not 1 <= index <= len(results):
-                return "Ik kan dit met de gevonden bronnen niet betrouwbaar bevestigen, maat.", []
+                return UNCONFIRMED_WEB_REPLY, []
             if index not in used:
                 used.append(index)
     if not used:
-        return "Ik kan dit met de gevonden bronnen niet betrouwbaar bevestigen, maat.", []
+        return UNCONFIRMED_WEB_REPLY, []
     # Do not let an uncited, model-invented URL masquerade as a source.
     allowed_urls = {item["url"] for item in results}
     if any(url.rstrip(".,;!") not in allowed_urls for url in re.findall(r"https?://[^\s)]+", answer)):
-        return "Ik kan dit met de gevonden bronnen niet betrouwbaar bevestigen, maat.", []
+        return UNCONFIRMED_WEB_REPLY, []
     mapping = {old: new for new, old in enumerate(used, start=1)}
     answer = _CITATION.sub(
         lambda match: "[" + ", ".join(str(mapping[int(value.strip())]) for value in match.group(1).split(",")) + "]",

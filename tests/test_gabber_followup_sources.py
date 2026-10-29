@@ -9,7 +9,7 @@ import types
 import unittest
 from unittest.mock import Mock, patch
 
-from gabber_context import resolve_gabber_context, subjects_in
+from gabber_context import resolve_gabber_context, reviewed_edition_pause_reply, subjects_in
 from core.mhjh_context import get_relevant_mhjh_context
 
 # Import only the web-routing module, not the provider's unrelated app imports.
@@ -242,6 +242,8 @@ def load_chat_handler(history, answer="Geen Mysteryland-editie in 2026 [1].", re
         "_is_memory_question": lambda message: False,
         "_is_identity_question": lambda message: False,
         "resolve_gabber_context": lambda q, h: resolve_gabber_context(q, h, TODAY),
+        "reviewed_edition_pause_reply": reviewed_edition_pause_reply,
+        "UNCONFIRMED_WEB_REPLY": web.UNCONFIRMED_WEB_REPLY,
         "build_gabber_web_query": lambda q, h, resolved=None: web.build_gabber_web_query(q, h, TODAY, resolved),
         "get_relevant_mhjh_context": get_relevant_mhjh_context,
         "should_search_web": web.should_search_web,
@@ -325,7 +327,22 @@ class HandlerRegressionTests(unittest.TestCase):
         handler, model, provider, _ = load_chat_handler(HISTORY, "Ja, het ging gewoon door.")
         result = handler({"session_id": "isolated", "message": "dus dit jaar ook?"}, None, Mock())
         self.assertEqual(result["sources"], [])
-        self.assertIn("niet betrouwbaar bevestigen", result["reply"])
+        self.assertIn("Mysteryland sloeg 2026 over", result["reply"])
+        self.assertNotIn("het ging gewoon door", result["reply"])
+
+    def test_uncited_reply_cannot_invent_a_positive_edition_from_knowledge(self):
+        c = resolve_gabber_context("dus dit jaar ook?", [{"role": "user", "content": "Vertel over Dominator"}], TODAY)
+        self.assertIsNone(reviewed_edition_pause_reply(c, "### Dominator\nHet festival heeft een camping."))
+
+    def test_dated_fallback_uses_only_the_named_subject_and_year(self):
+        c = resolve_gabber_context("dus dit jaar ook?", HISTORY, TODAY)
+        wrong = "### Dominator\nDominator sloeg 2026 over."
+        self.assertIsNone(reviewed_edition_pause_reply(c, wrong))
+        self.assertIsNone(reviewed_edition_pause_reply(c, "### Mysteryland\nMysteryland sloeg 2025 over."))
+
+    def test_chat_assertion_is_not_a_fallback_knowledge_source(self):
+        c = resolve_gabber_context("dus dit jaar ook?", HISTORY, TODAY)
+        self.assertIsNone(reviewed_edition_pause_reply(c, None))
 
 
 class ExistingAgendaRoutingTests(unittest.TestCase):
