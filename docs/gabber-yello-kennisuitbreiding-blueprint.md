@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.3 — 29 oktober 2026
+Versie 1.4 — 29 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -52,9 +52,19 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - De negen retrievalcontroles slagen ook met de bestaande live-kennisloader en de overige live-kennisbestanden. Nieuwe kennisbestanden zijn inhoudelijk identiek aan de geaccepteerde stagingversie. Geen databases, secrets of overige livecode gewijzigd.
 - GitHub meldt geen deploystatussen voor deze commit. De productiefunctionaliteit is wel onafhankelijk gecontroleerd: /health geeft HTTP 200, env live en db_ok true. Een nieuwe geïsoleerde gastchat op de live-API geeft The Satan als artiest uit Rusland met hardcore, drum-and-bass en breakcore; knowledge_used=true, web_used=false, memory_used=false. Daarmee is deze nieuwe kennis ook in de draaiende productiechat bevestigd, zonder een volledig modelregressietestpakket te claimen.
 
+## Ronde 3 goedgekeurd en geselecteerd voor staging op 29 oktober 2026
+- Dennis heeft de volledige verwerkte review expliciet goedgekeurd, inclusief de rode actualisaties van Mysteryland en Dominator, en opdracht gegeven deze naar staging te zetten. Geen gouden knop voor live ontvangen.
+- Goedgekeurde verdieping over Mysteryland-locaties en de tijdlaag 2025/2026/2027, Dominator in Vlietland en als weekendfestival, Decibel-locaties, Ghosttown en Dance 2 Eden, Hellbound versus Hellraiser, Raving Nightmare versus A Nightmare in Rotterdam, Global Hardcore Nation, Operatie Staartjes en het gebruik van flyers en registraties geïntegreerd in ronde 3.
+- Voor Mirko Kuit geldt de door Dennis bevestigde correctie: aanwezig bij editie II, maar geen publieke foto's gemaakt. De oude belofte dat hij bij editie II weer fotografeert is ook op de drie relevante plekken in de bestaande persona-kennis van ronde 7 gelijkgetrokken. Dit is geen volledige uitbreiding of herkeuring van ronde 7.
+- Reviewvragen, blauwe commentaren en de formulering ter controle zijn niet als kennis naar de runtime gekopieerd. Bronverwijzingen en peildatum zijn behouden. De ontvangen Word blijft de reviewhistorie; de expliciete chatgoedkeuring rondt de laatste rode passages af.
+- Alleen ronde 3, de beperkte consistentiecorrectie in ronde 7, de offline retrievaltest en deze statusbeschrijving worden op askyellow-staging/main gewijzigd. De kennisloader, drie-passagelimiet en het contextbudget blijven ongewijzigd.
+- De bestaande negen retrievalchecks plus eenentwintig ronde-3-vragen en drie controles op conflicterende Mirko-formuleringen slagen met een verse snapshot van de stagingkennis: 33 checks, verdeeld over drie testmethoden. Dit is geen volledige modelregressietest of bewijs van de Render-deploy.
+- Staging /health is vooraf bereikbaar met HTTP 200, env staging en db_ok true. Functionele controle van de nieuwe modelantwoorden volgt na de deploy.
+- Productierepository askyellow-ai blijft in deze stap ongemoeid; ronde 3 wacht op stagingacceptatie en een afzonderlijke gouden knop.
+
 ## Volgende stappen
 1. Ronde 1 en 2 afgerond: inhoud goedgekeurd, staging geaccepteerd, gouden knop ontvangen, livepromotie uitgevoerd en productieantwoord gecontroleerd.
-2. Rondes 3 tot en met 7 uitbreiden op basis van hun bestaande goedgekeurde teksten; die bronnen eerst opnieuw ophalen.
-3. De tijdlaag in de overige rondes en operationele kennis nalopen voordat die worden gepubliceerd; deze ronde corrigeert alleen de verwijzingen binnen ronde 2.
+2. Ronde 3 op staging testen; daarna pas met expliciete gouden knop naar live. Rondes 4 tot en met 7 verder uitbreiden op basis van hun bestaande goedgekeurde teksten.
+3. De tijdlaag in de overige rondes en operationele kennis nalopen voordat die worden gepubliceerd; deze publicaties corrigeren verwijzingen binnen ronde 2 en 3 en de expliciet bevestigde Mirko-zinnen in ronde 7.
 4. Stagingwijzigingen uit de testsessie van september zijn hier niet opnieuw geïnspecteerd. Hun deploystatus en werking moeten vóór nieuwe implementatie worden vastgesteld; eerdere vermoedens over Render zijn geen bevestigde status.
 5. Gerichte kennis- en gedragstests na integratie, gevolgd door expliciete livegoedkeuring.
