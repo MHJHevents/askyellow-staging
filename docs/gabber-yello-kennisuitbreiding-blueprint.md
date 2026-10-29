@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.1 — 29 oktober 2026
+Versie 1.3 — 29 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -47,10 +47,13 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - Verwijzingen naar de programmering van Den Haag Hakkûh II in ronde 2 zijn gedateerd als historische programmering van 17 oktober 2026; daarmee is geen daadwerkelijk gespeelde set bewezen.
 - Ronde 1 en 2 zijn samen met negen offline retrievalcontroles en deze blueprint naar MHJHevents/askyellow-staging op branch main doorgezet. De bestaande kennisselectie, limiet van drie passages en contextbudget zijn ongewijzigd.
 - De negen lokale retrievalcontroles slagen. Dit controleert kennisselectie, niet het daadwerkelijke modelantwoord of de Render-deploy.
-- Productierepository askyellow-ai en databases zijn niet gewijzigd. Deploy en publieke stagingchat zijn nog niet geverifieerd. Voor live blijft een expliciete gouden knop nodig.
+- Dennis heeft de stagingchat getest met de vraag over The Satan. Het gedeelde antwoord benoemt Rusland, hardcore, drum-and-bass en breakcore correct. Op basis daarvan gaf Dennis op 29 oktober 2026 expliciet de gouden knop voor beide rondes.
+- Productierepository askyellow-ai/main is bijgewerkt met uitsluitend beide goedgekeurde kennisbestanden en de bijbehorende offline test. Commit: bea850a5fedb031626fe8942481ea380ce5593b4. Voorgaande livecommit voor een eventuele gerichte rollback: 123fedd7c2265bb815889117d7c2075c620e4dcb.
+- De negen retrievalcontroles slagen ook met de bestaande live-kennisloader en de overige live-kennisbestanden. Nieuwe kennisbestanden zijn inhoudelijk identiek aan de geaccepteerde stagingversie. Geen databases, secrets of overige livecode gewijzigd.
+- GitHub meldt geen deploystatussen voor deze commit. De productiefunctionaliteit is wel onafhankelijk gecontroleerd: /health geeft HTTP 200, env live en db_ok true. Een nieuwe geïsoleerde gastchat op de live-API geeft The Satan als artiest uit Rusland met hardcore, drum-and-bass en breakcore; knowledge_used=true, web_used=false, memory_used=false. Daarmee is deze nieuwe kennis ook in de draaiende productiechat bevestigd, zonder een volledig modelregressietestpakket te claimen.
 
 ## Volgende stappen
-1. Geen inhoudelijke reviewpunten meer open voor ronde 1 en 2. Controleer de stagingdeploy en voer een korte gesprekstest uit voordat deze versie naar live gaat.
+1. Ronde 1 en 2 afgerond: inhoud goedgekeurd, staging geaccepteerd, gouden knop ontvangen, livepromotie uitgevoerd en productieantwoord gecontroleerd.
 2. Rondes 3 tot en met 7 uitbreiden op basis van hun bestaande goedgekeurde teksten; die bronnen eerst opnieuw ophalen.
 3. De tijdlaag in de overige rondes en operationele kennis nalopen voordat die worden gepubliceerd; deze ronde corrigeert alleen de verwijzingen binnen ronde 2.
 4. Stagingwijzigingen uit de testsessie van september zijn hier niet opnieuw geïnspecteerd. Hun deploystatus en werking moeten vóór nieuwe implementatie worden vastgesteld; eerdere vermoedens over Render zijn geen bevestigde status.
