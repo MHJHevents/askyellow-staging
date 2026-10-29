@@ -90,6 +90,9 @@ def call_yello_llm(
     if hints.get("time_hint"):
         messages.append({"role": "system", "content": hints["time_hint"]})
 
+    if personality == "gabber_yello" and hints.get("topic_context"):
+        messages.append({"role": "system", "content": hints["topic_context"]})
+
     if kb_answer:
         knowledge_instruction = (
             "Gebruik deze informatie als bron voor het antwoord, maar formuleer natuurlijk en passend bij het gesprek."
@@ -136,7 +139,9 @@ def call_yello_llm(
         else:
             web_status = (
                 "De internetzoekactie leverde geen bruikbare resultaten op of mislukte. "
-                "Zeg dat kort en eerlijk en verzin geen actuele informatie."
+                "Zeg dat kort en eerlijk en verzin geen actuele informatie. "
+                "Concrete gedateerde feiten uit de gecontroleerde kennis mogen wel worden benoemd; "
+                "zeg daarbij niet dat die zojuist online zijn bevestigd."
             )
         event_query = hints.get("event_lookup_query")
         if event_query:
@@ -229,3 +234,4 @@ def call_gabber_yello_llm(
         personality="gabber_yello",
         knowledge_label="MHJH",
     )
+

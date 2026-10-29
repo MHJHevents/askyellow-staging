@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.4 — 29 oktober 2026
+Versie 1.5 — 29 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -62,9 +62,22 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - Staging /health is vooraf bereikbaar met HTTP 200, env staging en db_ok true. Functionele controle van de nieuwe modelantwoorden volgt na de deploy.
 - Productierepository askyellow-ai blijft in deze stap ongemoeid; ronde 3 wacht op stagingacceptatie en een afzonderlijke gouden knop.
 
+## Reparatie vervolgvragen en bronselectie op staging
+- Aanleiding: bij de vervolgvraag 'jo dus het is er nog steeds?' ging de oude code zonder Mysteryland zoeken en voegde ongerelateerde zoekresultaten automatisch als bronnen toe. Op 'dus dit jaar ook?' werd vervolgens onterecht een editie in 2026 bevestigd. Dennis gaf expliciet toestemming deze reparatie op staging uit te voeren; geen livegoedkeuring.
+- Een begrensde onderwerpresolver gebruikt recente gesprekscontext en namen uit de goedgekeurde kennis. Historie bepaalt alleen waarnaar de vraag verwijst, nooit of een bewering waar is. Bij een onduidelijke of dubbele verwijzing volgt één gerichte vraag.
+- De kennis wordt opnieuw geselecteerd met het opgeloste onderwerp; relatieve jaartallen volgen Europe/Amsterdam. Een onderwerpwissel mag geen oud jaar meenemen. De eerdere zwakke tekstmatch blokkeert deze herselectie niet meer.
+- Algemene webresultaten krijgen een relevantiecontrole op titel en snippet, onderwerp, gevraagd jaar en waar relevant campinginformatie. Dit is een controle op zoekmetadata, geen volledige pagina- of entailmentverificatie. Een onderwerp alleen in een URL is onvoldoende. Ook een op datum passend resultaat over een ander genoemd festival wordt geweigerd.
+- Alleen vooraf gefilterde bronnen waarnaar het model daadwerkelijk inline verwijst komen in de uiteindelijke bronnenlijst, met hernummering. Ontbrekende of ongeldige bronverwijzingen bij een webantwoord geven een eerlijke terugvaltekst; er wordt geen decoratieve bronnenlijst aangeplakt.
+- Bij een mislukte of lege webcheck mogen concrete gedateerde feiten uit de gecontroleerde kennis nog worden benoemd, maar niet als zojuist online bevestigd.
+- Bestaande lokale agenda-zoekvragen en plaatscorrecties blijven ondersteund. Een genoemd festival blijft in een weekendzoekopdracht behouden; vandaag en morgen krijgen een concrete datum voor de bestaande datumfilter.
+- Onderwerpselectie en bronfiltering zijn lokaal en vereisen geen extra modelaanroep. De bestaande kennisloader, maximaal drie kennispassages, het kennisbudget en de tokenlogging blijven behouden. Alleen bij een tijdgebonden vraag of vervolgvraag komt een korte extra onderwerpinstructie mee; algemene webcontext blijft op maximaal vier resultaten begrensd.
+- 55 offline testmethoden slagen, inclusief de bestaande 33 kennischecks, de volledige gemelde gespreksketen met een vooraf fout assistentantwoord, onderwerpwissels, onbekende namen, dubbelzinnigheid, bronafwijzing, bronnummering, provideruitval, agenda-regressies en overdracht van het onderwerp aan de modelprompt. Geen echte model- of provideraanroepen in deze offline tests.
+- Deze reparatie wordt uitsluitend op askyellow-staging/main gepubliceerd. Praktijktest na de Render-deploy volgt afzonderlijk; offline tests zijn geen garantie dat ieder modelantwoord correct is. Live blijft op bea850a5fedb031626fe8942481ea380ce5593b4 totdat Dennis afzonderlijk de gouden knop geeft.
+
 ## Volgende stappen
 1. Ronde 1 en 2 afgerond: inhoud goedgekeurd, staging geaccepteerd, gouden knop ontvangen, livepromotie uitgevoerd en productieantwoord gecontroleerd.
 2. Ronde 3 op staging testen; daarna pas met expliciete gouden knop naar live. Rondes 4 tot en met 7 verder uitbreiden op basis van hun bestaande goedgekeurde teksten.
 3. De tijdlaag in de overige rondes en operationele kennis nalopen voordat die worden gepubliceerd; deze publicaties corrigeren verwijzingen binnen ronde 2 en 3 en de expliciet bevestigde Mirko-zinnen in ronde 7.
 4. Stagingwijzigingen uit de testsessie van september zijn hier niet opnieuw geïnspecteerd. Hun deploystatus en werking moeten vóór nieuwe implementatie worden vastgesteld; eerdere vermoedens over Render zijn geen bevestigde status.
 5. Gerichte kennis- en gedragstests na integratie, gevolgd door expliciete livegoedkeuring.
+

@@ -31,7 +31,8 @@ from image_shared import (
 )
 
 from llm import call_yellowmind_llm, call_gabber_yello_llm
-from gabber_web import build_gabber_web_query, filter_gabber_event_results, find_mhjh_lineup_overlap, format_web_context, get_official_mhjh_ticket_url, search_web_for_gabber, should_search_web
+from gabber_context import resolve_gabber_context
+from gabber_web import build_gabber_web_query, filter_gabber_event_results, filter_gabber_web_results, find_mhjh_lineup_overlap, format_web_context, get_official_mhjh_ticket_url, search_web_for_gabber, select_gabber_citations, should_search_web
 from gabber_memory import (
     clear_gabber_memories,
     format_gabber_memories,
@@ -437,28 +438,37 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
             "member_recognized": bool(member),
         }
 
-    mhjh_context = get_relevant_mhjh_context(message)
-    if not mhjh_context and history:
-        recent_user_context = [
-            item["content"]
-            for item in history[-8:]
-            if item.get("role") == "user" and isinstance(item.get("content"), str)
-        ]
-        if recent_user_context:
-            mhjh_context = get_relevant_mhjh_context(
-                "\n".join(recent_user_context + [message])
-            )
+    topic = resolve_gabber_context(message, history)
+    web_query, event_lookup = build_gabber_web_query(message, history, resolved=topic)
+    if topic.needs_clarification and (topic.subjects or not event_lookup):
+        answer = topic.clarification
+        store_message_pair(conversation_session, message, answer)
+        return {
+            "reply": answer,
+            "personality": "gabber_yello",
+            "knowledge_used": False,
+            "memory_used": False,
+            "web_used": False,
+            "sources": [],
+            "member_recognized": bool(member),
+        }
+
+    # Re-retrieve for the resolved topic even if a vague sentence had weak matches.
+    mhjh_context = get_relevant_mhjh_context(topic.query)
+    if topic.instruction:
+        hints["topic_context"] = topic.instruction
+    if topic.current or topic.year is not None:
+        hints["time_context"] = build_time_context()
 
     web_results = []
-    web_query, event_lookup = build_gabber_web_query(message, history)
     if event_lookup:
         hints["event_lookup_query"] = web_query
         if not hints.get("time_context"):
             hints["time_context"] = build_time_context()
-    if event_lookup or should_search_web(message, bool(mhjh_context)):
+    if event_lookup or should_search_web(message, bool(mhjh_context)) or should_search_web(topic.query, bool(mhjh_context)):
         try:
-            raw_web_results = search_web_for_gabber(web_query)
-            web_results = raw_web_results
+            raw_web_results = search_web_for_gabber(web_query, limit=6)
+            web_results = filter_gabber_web_results(raw_web_results, web_query, topic.subjects)
             if event_lookup:
                 web_results = filter_gabber_event_results(raw_web_results, web_query)
                 import re
@@ -527,14 +537,18 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
                         fallback_query = f"site:djguide.nl/party {web_query}"
                         fallback_results = search_web_for_gabber(fallback_query, limit=6)
                         web_results = filter_gabber_event_results(fallback_results, web_query)
+            if topic.subjects:
+                # Date-matching events about a different named festival are not evidence.
+                web_results = filter_gabber_web_results(web_results, web_query, topic.subjects)
             lineup_overlap = find_mhjh_lineup_overlap(web_results)
             if lineup_overlap:
                 hints["mhjh_lineup_overlap"] = lineup_overlap
             web_context = format_web_context(web_results)
             hints["web_search_succeeded"] = bool(web_results)
             hints["web_context"] = web_context or (
-                "De internetzoekopdracht leverde geen resultaten op die de gevraagde plaats en exacte periode bevestigen. "
-                "Zeg alleen dat je het niet betrouwbaar kunt bevestigen. Zeg niet dat er geen evenementen zijn en verzin geen feest of line-up."
+                "De internetzoekopdracht leverde geen bronnen op die het bedoelde onderwerp en de gevraagde feiten of periode ondersteunen. "
+                "Zeg dat je het online niet betrouwbaar kunt bevestigen, niet dat er niets bestaat. "
+                "Concrete gedateerde feiten uit de gecontroleerde kennis mag je wel benoemen, maar niet als nieuw online bevestigd."
             )
         except Exception as exc:
             print(f"Gabber Yello web search failed: {type(exc).__name__}: {exc}")
@@ -560,7 +574,9 @@ def gabber_yello_chat(payload: dict, request: Request, background_tasks: Backgro
     if not answer:
         answer = "⚠️ Gabber Yello had ff een vastlopertje. Vraag het nog eens."
 
-    if hints.get("mhjh_lineup_overlap"):
+    answer, web_results = select_gabber_citations(answer, web_results)
+
+    if hints.get("mhjh_lineup_overlap") and web_results:
         artists = ", ".join(hints["mhjh_lineup_overlap"])
         verb = "staat" if len(hints["mhjh_lineup_overlap"]) == 1 else "staan"
         ticket_url = get_official_mhjh_ticket_url()
@@ -738,3 +754,4 @@ def reset_chat(payload: dict):
         conn.close()
 
     return {"ok": True}
+

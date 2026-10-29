@@ -1,6 +1,9 @@
 """Guarded web-search routing for Gabber Yello."""
 
 import re
+from urllib.parse import urlparse
+
+from gabber_context import is_current_gabber_question, resolve_gabber_context
 
 from websearch import do_websearch
 
@@ -22,6 +25,7 @@ _CURRENT = (
     "wanneer is het", "wanneer vindt", "is er nog", "bestaat nog",
     "dit weekend", "komend weekend", "aankomend weekend", "volgend weekend",
     "aankomende feesten", "komende feesten", "feestjes dit weekend", "feesten dit weekend",
+    "nog steeds", "dit jaar", "volgend jaar", "gaat het door", "gaat dat door", "actuele status",
 )
 
 # Only factual misses get an automatic internet fallback. Personal memories,
@@ -65,7 +69,7 @@ def should_search_web(message: str, has_official_mhjh_context: bool) -> bool:
 
     # Current/recent questions always require a fresh web check, even when
     # reviewed MHJH knowledge also contains an older fact about the subject.
-    if any(trigger in q_lower for trigger in _CURRENT):
+    if any(trigger in q_lower for trigger in _CURRENT) or is_current_gabber_question(q):
         return True
 
     # Reviewed MHJH knowledge remains the primary source for historical facts.
@@ -114,6 +118,108 @@ def format_web_context(results: list[dict]) -> str | None:
             f"URL: {item['url']}"
         )
     return "\n\n".join(parts)
+
+
+_SOURCE_STOPWORDS = {
+    "wat", "wie", "waar", "wanneer", "waarom", "welke", "hoe", "dat", "dit",
+    "die", "het", "een", "van", "voor", "met", "naar", "over", "zijn", "was",
+    "wordt", "worden", "heeft", "hebben", "kan", "kun", "kunnen", "nog", "steeds",
+    "ook", "dus", "maar", "dan", "wel", "niet", "geen", "weet", "zeker", "huhhh",
+    "zoek", "zoeken", "eens", "even", "ditmaal", "internet", "online", "web", "check",
+    "opzoeken", "google", "vertel", "mij", "maat", "maatje", "actuele", "actueel",
+    "status", "huidige", "jaar", "editie", "festival", "feest", "hardcore", "gabber",
+    "artiest", "track", "plaat", "nummer", "release", "nieuwste", "laatste", "recentste",
+    "camping", "campsite", "line", "up", "lineup", "tickets", "kaartjes", "datum",
+}
+_STATUS_LOOKUP = re.compile(r"\b(?:actuele status|nog steeds|bestaat|terugkeer)\b", re.IGNORECASE)
+_CITATION = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
+
+
+def _plain(text):
+    from core.mhjh_context import _normalize
+    return _normalize(text)
+
+
+def _subject_supported(subject, text):
+    normalized = " " + _plain(text) + " "
+    name = _plain(subject)
+    variants = {name, re.sub(r"^(?:the|dj)\s+", "", name)}
+    return any(value and " " + value + " " in normalized for value in variants)
+
+
+def filter_gabber_web_results(results, query, subjects=(), limit=4):
+    """A relevance gate on search metadata, not a claim of full-page verification."""
+    anchors = {
+        token for token in _plain(query).split()
+        if len(token) >= 3 and token not in _SOURCE_STOPWORDS and not token.isdigit()
+    }
+    if not subjects and not anchors:
+        return []
+    years = {int(value) for value in re.findall(r"\b(?:19|20)\d{2}\b", query or "")}
+    status_lookup = bool(_STATUS_LOOKUP.search(query or ""))
+    camping_lookup = bool(re.search(r"\b(?:camping|campsite|kamperen)\b", query or "", re.IGNORECASE))
+    kept, seen = [], set()
+    for item in results or []:
+        title = str(item.get("title") or "").strip()
+        snippet = str(item.get("snippet") or "").strip()
+        url = str(item.get("url") or "").strip()
+        parsed = urlparse(url)
+        if not title or parsed.scheme.lower() not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password:
+            continue
+        if url in seen:
+            continue
+        # A topic in an arbitrary URL is not evidence that its contents support it.
+        text = title + " " + snippet
+        if subjects:
+            if not any(_subject_supported(subject, text) for subject in subjects):
+                continue
+        else:
+            hits = anchors & set(_plain(text).split())
+            if len(hits) < min(2, len(anchors)):
+                continue
+        if years:
+            evidence_years = {int(value) for value in re.findall(r"\b(?:19|20)\d{2}\b", text)}
+            acceptable = years
+            if status_lookup:
+                acceptable = years | {max(years) + 1, max(years) + 2}
+            if not acceptable & evidence_years:
+                continue
+        if camping_lookup and not re.search(r"\b(?:camping|campsite|kamperen|kampeer\w*|accommodation\w*)\b", text, re.IGNORECASE):
+            continue
+        seen.add(url)
+        kept.append(item)
+        if len(kept) >= limit:
+            break
+    return kept
+
+
+def select_gabber_citations(answer, results):
+    """Publish only cited, prefiltered sources; reject missing/invalid web grounding."""
+    answer = re.split(r"(?im)^\s*(?:Bronnen|Sources)\s*:", answer or "", maxsplit=1)[0].strip()
+    if not results:
+        return _CITATION.sub("", answer).strip(), []
+    # Normalize model-added hyperlinks; the server owns the final source list.
+    answer = re.sub(r"\[(\d+)\]\(https?://[^\s)]+\)", r"[\1]", answer)
+    used = []
+    for match in _CITATION.finditer(answer):
+        for raw in match.group(1).split(","):
+            index = int(raw.strip())
+            if not 1 <= index <= len(results):
+                return "Ik kan dit met de gevonden bronnen niet betrouwbaar bevestigen, maat.", []
+            if index not in used:
+                used.append(index)
+    if not used:
+        return "Ik kan dit met de gevonden bronnen niet betrouwbaar bevestigen, maat.", []
+    # Do not let an uncited, model-invented URL masquerade as a source.
+    allowed_urls = {item["url"] for item in results}
+    if any(url.rstrip(".,;!") not in allowed_urls for url in re.findall(r"https?://[^\s)]+", answer)):
+        return "Ik kan dit met de gevonden bronnen niet betrouwbaar bevestigen, maat.", []
+    mapping = {old: new for new, old in enumerate(used, start=1)}
+    answer = _CITATION.sub(
+        lambda match: "[" + ", ".join(str(mapping[int(value.strip())]) for value in match.group(1).split(",")) + "]",
+        answer,
+    )
+    return answer, [results[index - 1] for index in used]
 
 
 _EVENT_WORD = re.compile(
@@ -294,12 +400,13 @@ def _confirmed_lineup_query_names(limit: int = 3) -> list[str]:
     ][:limit]
 
 
-def build_gabber_web_query(message: str, history: list[dict] | None = None, today=None) -> tuple[str, bool]:
+def build_gabber_web_query(message: str, history: list[dict] | None = None, today=None, resolved=None) -> tuple[str, bool]:
     """Build a Dutch, local, date-anchored query for current party searches.
 
     A location correction can follow an event question, so use recent user turns
     only; earlier assistant answers are never copied into the search query.
     """
+    context = resolved or resolve_gabber_context(message, history, today)
     user_turns = [
         item.get("content", "")
         for item in (history or [])[-12:]
@@ -309,10 +416,11 @@ def build_gabber_web_query(message: str, history: list[dict] | None = None, toda
     current_location = _extract_location(message)
     is_event_detail = bool(event_turns and _EVENT_DETAIL.search(message or ""))
     followup_event = bool(event_turns and current_location and not _is_upcoming_event_question(message))
-    if not _is_upcoming_event_question(message) and not followup_event and not is_event_detail:
-        return " ".join((message or "").split())[:300], False
+    named_period = bool(context.subjects and not context.needs_clarification and _EVENT_PERIOD.search(message or ""))
+    if not _is_upcoming_event_question(message) and not followup_event and not is_event_detail and not named_period:
+        return ("" if context.needs_clarification else context.query), False
 
-    event_text = (message or "") if _is_upcoming_event_question(message) else event_turns[-1]
+    event_text = (message or "") if _is_upcoming_event_question(message) or named_period else event_turns[-1]
     location = current_location
     if not location:
         for prior in reversed(user_turns):
@@ -330,12 +438,22 @@ def build_gabber_web_query(message: str, history: list[dict] | None = None, toda
         month_name = _EVENT_MONTH_NAMES[month][0]
         date_part = f"{day} {month_name} {year}"
     else:
-        date_part = period_label
-    query = f"hardcore party {location} {date_part}"
+        from datetime import datetime, timedelta
+        from zoneinfo import ZoneInfo
+
+        current_day = today or datetime.now(ZoneInfo("Europe/Amsterdam")).date()
+        target_day = current_day + timedelta(days=1 if period_label == "morgen" else 0)
+        weekday_names = {"deze vrijdag": 4, "deze zaterdag": 5, "deze zondag": 6}
+        if period_label in weekday_names:
+            target_day = current_day + timedelta(days=(weekday_names[period_label] - current_day.weekday()) % 7)
+        date_part = f"{target_day.day} {_EVENT_MONTH_NAMES[target_day.month][0]} {target_day.year}"
+    named = context.subjects[0] if len(context.subjects) == 1 and not context.needs_clarification else None
+    query = f"{named} festival {date_part}" if named else f"hardcore party {location} {date_part}"
     if is_event_detail:
         query += " line-up"
-        for artist in _confirmed_lineup_query_names()[:2]:
-            query += f" {artist}"
+        if not named:
+            for artist in _confirmed_lineup_query_names()[:2]:
+                query += f" {artist}"
     return query[:300], True
 
 
@@ -394,3 +512,4 @@ def get_official_mhjh_ticket_url() -> str | None:
     except (OSError, ValueError, TypeError):
         return None
     return value if isinstance(value, str) and value.startswith("https://") else None
+
