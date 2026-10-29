@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.5 — 29 oktober 2026
+Versie 1.5.1 — 29 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -71,7 +71,8 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - Bij een mislukte of lege webcheck mogen concrete gedateerde feiten uit de gecontroleerde kennis nog worden benoemd, maar niet als zojuist online bevestigd.
 - Bestaande lokale agenda-zoekvragen en plaatscorrecties blijven ondersteund. Een genoemd festival blijft in een weekendzoekopdracht behouden; vandaag en morgen krijgen een concrete datum voor de bestaande datumfilter.
 - Onderwerpselectie en bronfiltering zijn lokaal en vereisen geen extra modelaanroep. De bestaande kennisloader, maximaal drie kennispassages, het kennisbudget en de tokenlogging blijven behouden. Alleen bij een tijdgebonden vraag of vervolgvraag komt een korte extra onderwerpinstructie mee; algemene webcontext blijft op maximaal vier resultaten begrensd.
-- 55 offline testmethoden slagen, inclusief de bestaande 33 kennischecks, de volledige gemelde gespreksketen met een vooraf fout assistentantwoord, onderwerpwissels, onbekende namen, dubbelzinnigheid, bronafwijzing, bronnummering, provideruitval, agenda-regressies en overdracht van het onderwerp aan de modelprompt. Geen echte model- of provideraanroepen in deze offline tests.
+- 57 offline testmethoden slagen, inclusief de bestaande 33 kennischecks, de volledige gemelde gespreksketen met een vooraf fout assistentantwoord, onderwerpwissels, onbekende namen, dubbelzinnigheid, bronafwijzing, bronnummering, provideruitval, agenda-regressies en overdracht van het onderwerp aan de modelprompt. Geen echte model- of provideraanroepen in deze offline tests.
+- De eerste echte stagingproef vond nog onnodige dubbelzinnigheid: de intro Mysteryland in de jaren negentig maakte van de periode een tweede onderwerp. Periodes, kale jaartallen, getallen en stijlnamen zijn daarom als concurrerende namen uitgesloten. Twee extra regressietests dekken dit geval. De artiestenvervolgvraag over The Satan bleef in die praktijktest correct bij Rusland. De herhaalde volledige festivalproef volgt na deze naverbetering.
 - Deze reparatie wordt uitsluitend op askyellow-staging/main gepubliceerd. Praktijktest na de Render-deploy volgt afzonderlijk; offline tests zijn geen garantie dat ieder modelantwoord correct is. Live blijft op bea850a5fedb031626fe8942481ea380ce5593b4 totdat Dennis afzonderlijk de gouden knop geeft.
 
 ## Volgende stappen

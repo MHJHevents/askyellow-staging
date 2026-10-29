@@ -19,6 +19,11 @@ _GENERIC = {
     "rotterdam", "amsterdam", "den haag", "utrecht", "scheveningen", "eersel",
     "enschede", "groningen", "zaandam", "arnhem", "eindhoven", "leidschendam",
     "haarlemmermeer", "vijfhuizen", "heerlen", "maastricht", "oberhausen", "antwerpen",
+    "frenchcore", "oldschool", "early rave", "early hardcore", "happy hardcore",
+    "millennium", "millennium hardcore", "mainstream", "mainstream hardcore",
+    "industrial", "industrial hardcore", "crossbreed", "drum and bass", "breakcore",
+    "uptempo hardcore", "terrorcore", "freestyle", "harddance", "raw", "rawstyle",
+    "techno", "house", "acid", "acid house", "new beat",
 }
 _FOLLOWUP = re.compile(
     r"\b(?:is|was|bestaat|gebeurt|gaat|komt|kan|doet|draait|speelt|staat|heeft|hebben)"
@@ -61,6 +66,14 @@ def _subject_candidate(value):
     if not 3 <= len(normalized) <= 70 or len(normalized.split()) > 6:
         return None
     if normalized in _GENERIC or re.match(r"^(?:vraag|wat|wie|waar|wanneer|hoe|waarom|zijn mening|haar mening)\b", normalized):
+        return None
+    if normalized.isdigit() or re.match(r"^(?:(?:begin|midden|eind) )?jaren?\b", normalized):
+        return None
+    date_words = {
+        "januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus",
+        "september", "oktober", "november", "december", "bpm", "uur", "tot", "en",
+    }
+    if all(word.isdigit() or word in date_words for word in normalized.split()):
         return None
     return value
 

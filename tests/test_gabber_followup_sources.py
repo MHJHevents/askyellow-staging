@@ -32,6 +32,16 @@ RETURN = {"title": "Mysteryland 2027 FAQ", "snippet": "27, 28 en 29 augustus 202
 
 
 class SubjectResolutionTests(unittest.TestCase):
+    def test_periods_years_and_genres_are_not_competing_named_subjects(self):
+        for text, expected in (
+            ("Mysteryland in de jaren negentig", ("Mysteryland",)),
+            ("Mysteryland in 1991", ("Mysteryland",)),
+            ("Dominator en Frenchcore", ("Dominator",)),
+            ("The Satan maakt hardcore en drum-and-bass", ("The Satan",)),
+        ):
+            with self.subTest(text=text):
+                self.assertEqual(subjects_in(text), expected)
+
     def resolve(self, question, history=HISTORY):
         return resolve_gabber_context(question, history, TODAY)
 
@@ -250,6 +260,14 @@ def load_chat_handler(history, answer="Geen Mysteryland-editie in 2026 [1].", re
 
 
 class HandlerRegressionTests(unittest.TestCase):
+    def test_realistic_nineties_intro_does_not_create_false_ambiguity(self):
+        h = [{"role": "user", "content": "Vertel me over Mysteryland in de jaren negentig."}]
+        handler, model, provider, _ = load_chat_handler(h)
+        r = handler({"session_id": "isolated", "message": "dus dit jaar ook?"}, None, Mock())
+        model.assert_called_once()
+        self.assertIn("sloeg 2026 over", model.call_args.kwargs["kb_answer"])
+        self.assertNotIn("Bedoel je", r["reply"])
+
     def test_two_named_festivals_remain_ambiguous_even_for_weekend_followup(self):
         h = [{"role": "user", "content": "Mysteryland festival en Dominator festival dit weekend?"}]
         handler, model, provider, _ = load_chat_handler(h)
