@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.9 — 30 oktober 2026
+Versie 1.10 — 30 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -132,3 +132,20 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - Acht primaire bronpagina's zijn via de browser gecontroleerd op 30 oktober 2026. De webzoekfunctie gaf fouten; de broncontrole is daarom via de browser uitgevoerd. De DJ Norman-website was niet bereikbaar en is niet als opnieuw geverifieerde bron voor de nieuwe tekst gebruikt.
 - Het DJ T-go-releasevoorbeeld bevestigt geen specifieke MHJH-agencyrelatie. De oorspronkelijke persingsdatum van Name Of The DJ wordt niet afgeleid uit de geraadpleegde remasteruitgave uit 2022.
 - De rode voorstellen wachten op review door Dennis en Fer. Geen nieuwe ronde-5-inhoud naar staging of live gepubliceerd.
+
+## Ronde 5 goedgekeurd en geselecteerd voor staging op 30 oktober 2026
+- Dennis heeft de huidige ronde expliciet goedgekeurd en opdracht gegeven deze bij te werken en op staging te zetten. Geen liveopdracht.
+- Zeven afzonderlijke reviewantwoorden en de twee afsluitende opmerkingen zijn woordelijk in blauw in dezelfde HTML-leesversie bewaard. Goedgekeurde aanvullingen zijn zwart met gele markering. De oude basis blijft reviewhistorie; de runtime vervangt de onjuiste gezamenlijke definitie en de te stellige catalogusnummerdefinitie.
+- De goedgekeurde kennis bevat het onderscheid tussen testpersing, white label en promo; nuances bij heruitgaven, catalogusnummers en creditrollen; Mokum-geschiedenis; concrete versies en credits van MOK265 en MOK324; Industrial Strength-remixvoorbeelden; en de Top 40-gegevens van Kom Tie Dan Hè. Acht bronverwijzingen en de controledatum 30 oktober 2026 zijn behouden.
+- Fers concrete lijst met aanvullende tracks en labels volgt later en is niet vooruit ingevuld. Voor deze ronde blijft de eigen MHJH-context beperkt tot Komt Tie Dan He en Den Haag Hakkûh. Er zijn geen persoonlijke plaatherinneringen van Dennis of Fer toegevoegd. De bestaande culturele conceptverwijzingen blijven behouden.
+- De algemene goedkeuring omvat het huidige DJ T-go-releasevoorbeeld, maar bevestigt geen afzonderlijke agencyrelatie of overige persoonlijke band. De geraadpleegde MOK265-remasterdatum uit 2022 wordt niet als oorspronkelijke verschijningsdatum van Name Of The DJ gebruikt.
+- Alleen de goedgekeurde inhoud is voor de runtime geselecteerd. Reviewvragen, blauwe antwoorden, redactionele voorstellen en de nog niet ontvangen tracklijst worden niet als kennis gepubliceerd.
+- Op een verse geïsoleerde snapshot van de stagingkennis slagen acht unittest-methoden: 69 vraagcontroles over ronde 1 tot en met 5 en praktische lockerinfo, plus structurele controles op oude tegenstrijdigheden, reviewtekst en persoonlijke verhalen. De tests gebruiken de bestaande echte kennisloader, maximaal drie passages en hetzelfde contextbudget. Geen model-, database- of provideroproepen.
+- Deze stagingpublicatie wijzigt uitsluitend het ronde-5-kennisbestand, de bestaande retrievaltest en deze blueprint. De loader en overige applicatiecode zijn ongewijzigd. Het Render-deployresultaat en echte modelantwoorden na deze publicatie zijn niet door de offline tests bewezen.
+- Productierepository askyellow-ai/main wordt in deze ronde niet gewijzigd. Livepromotie wacht op Dennis' stagingcontrole en afzonderlijke gouden knop.
+
+## Eerstvolgende stappen na deze stagingpublicatie
+1. Dennis en Fer controleren de bijgewerkte ronde 5 in de stagingchat.
+2. Fers concrete tracklijst later ontvangen, gericht verifiëren en als nieuwe aanvulling voorleggen.
+3. Alleen na afzonderlijke gouden knop de geaccepteerde ronde 5 naar askyellow-ai/main overzetten.
+4. Daarna de volgende afgesproken kennisronde oppakken; persoonlijke herinneringen en de toekomstige hakkenworkshop niet zonder nieuwe inhoud invullen.
