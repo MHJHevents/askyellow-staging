@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.8 — 30 oktober 2026
+Versie 1.9 — 30 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -117,3 +117,18 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - De bestaande kennisloader, drie-passagelimiet en contextbudget blijven ongewijzigd. Eén kop in de nieuwe schoenverdieping noemt het concrete onderwerp expliciet zodat de bestaande kennisselectie de passage terugvindt.
 - Op een geïsoleerde snapshot van de actuele stagingkennis zijn zes unittest-methoden geslaagd: 48 vraagcontroles voor rondes 1 tot en met 4 en lockers, plus controle dat ronde 4 geen reviewvragen of beloftes over de nog niet gebouwde workshop bevat. De tests gebruiken de echte bestaande kennisloader, zonder modelaanroepen, secrets of gesprekken.
 - Deze publicatie wijzigt alleen ronde 4, de twee praktische kennisblokken, de bestaande retrievaltest en deze blueprint op askyellow-staging/main. askyellow-ai/live blijft ongewijzigd. Functionele controle na Render-deploy is niet door de offline tests bewezen.
+
+
+## Gouden knop ronde 4 en bronreparaties op 30 oktober 2026
+- Dennis heeft na zijn stagingcontrole expliciet opdracht gegeven ronde 4 naar main te zetten en de openstaande bronaanpassingen mee te nemen.
+- Productierepository askyellow-ai/main staat op 6babe6264762ab864b8d2a51f97a9127a13ee06e. Vorige productiecommit voor gerichte rollback: 6a9a7ff9bb3b5c69d54d89f6e20f2d2797548e07. De branch is na publicatie opnieuw gecontroleerd.
+- De release bevat ronde 4, de twee bijgewerkte praktische lockerblokken, bronroutering en citatiecontrole, de onderwerpresolver en de bijbehorende tests. In chat.py is uitsluitend de Gabber Yello-handler met noodzakelijke imports overgenomen. Alle dertien overige bestaande productiefuncties behouden hun oorspronkelijke AST. In llm.py zijn uitsluitend de onderwerp- en webcontextinstructies geïntegreerd.
+- Voor publicatie zijn op de samengestelde productiesnapshot 63 unittest-methoden geslaagd, inclusief vervolgvragen, bronrelevantie, bronnummering, foutafhandeling, agenda-routing en de bestaande kenniscontroles. Vier gewijzigde Pythonmodules zijn ook syntactisch gecontroleerd. Geen echte model-, database- of provideroproepen in deze offline tests.
+- GitHub meldt geen deploystatus voor de productiecommit. De draaiende Render-versie en een nieuw productieantwoord zijn in deze sessie nog niet onafhankelijk bevestigd.
+
+## Ronde 5 voorbereid voor inhoudelijke review
+- De actuele bestaande Markdown van ronde 5 is uit Library gelezen en volledig als zwarte basis behouden in Gabber_Yello_Ronde_5_AANVULLINGEN_ROOD.html.
+- Nieuwe rode verdieping over white label versus testpersing en promo, heruitgaven, catalogusidentificatie en rollen, Mokum-bedrijfsgeschiedenis, concrete credits van DJ Chosen Few en DJ T-go, Industrial Strength-remixversies en de Top 40-notering van Kom Tie Dan Hè.
+- Acht primaire bronpagina's zijn via de browser gecontroleerd op 30 oktober 2026. De webzoekfunctie gaf fouten; de broncontrole is daarom via de browser uitgevoerd. De DJ Norman-website was niet bereikbaar en is niet als opnieuw geverifieerde bron voor de nieuwe tekst gebruikt.
+- Het DJ T-go-releasevoorbeeld bevestigt geen specifieke MHJH-agencyrelatie. De oorspronkelijke persingsdatum van Name Of The DJ wordt niet afgeleid uit de geraadpleegde remasteruitgave uit 2022.
+- De rode voorstellen wachten op review door Dennis en Fer. Geen nieuwe ronde-5-inhoud naar staging of live gepubliceerd.
