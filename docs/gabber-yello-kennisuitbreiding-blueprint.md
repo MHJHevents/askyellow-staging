@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.6 — 30 oktober 2026
+Versie 1.7 — 30 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -98,3 +98,13 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - Bestaande ronde-4-basis volledig behouden. Nieuwe verdieping en correctievoorstellen zijn als afzonderlijke rode aanvulling uitgewerkt, met tien bronverwijzingen en reviewvragen voor Dennis en Fer.
 - Volledige leesversie: Gabber_Yello_Ronde_4_AANVULLINGEN_ROOD.html. Deze bevat de zwarte basis en rode voorstellen. De documentruntime kon niet worden geladen; er is daarom nog geen gerenderde en visueel gecontroleerde DOCX-versie geleverd.
 - De ongedateerde Whitehouse-lockerprijs wordt uitsluitend als correctievoorstel behandeld; er is geen actuele prijs verzonnen. Geen ronde-4-inhoud naar de runtime gepubliceerd.
+
+
+## Review ronde 4 ontvangen op 30 oktober 2026
+- De zeven antwoorden van Dennis na de pijltjes zijn woordelijk en in blauw bij de bijbehorende vragen in de bestaande HTML-review bewaard.
+- Cavello krijgt ook in de nieuwe verdieping een expliciete plek naast Australian. De beschrijving van de klassieke combinatie van kapsel, Aussie of Cavello en Air Max is als toegeschreven sceneherkenning verwerkt. Nieuwe formuleringen blijven rood tot hun eigen review.
+- De correctie van de ongedateerde lockerprijs is expliciet goedgekeurd en zwart met gele markering weergegeven. Er is geen nieuwe actuele prijs vastgesteld.
+- Geen extra pasjesnamen of dubbele armgebaren-uitleg toegevoegd. De bestaande brommer-uitleg blijft de verwijzing.
+- Wens voor volgende fase vastgelegd: een echte hakkenworkshop die Gabber Yello kan geven. Die workshop is nog niet gebouwd en heeft nog geen uitgewerkt of goedgekeurd lesprogramma.
+- Voorlopig geen nieuw familie- of reisverhaal. Dennis komt op mogelijke verdere wijzigingen in een volgende fase terug. Dit is geen onvoorwaardelijke goedkeuring van de volledige ronde en geen publicatieopdracht.
+- Dennis deelde een positief testgesprek over Mysteryland en Mirko. De testomgeving is niet genoemd, zodat hiermee geen productie-deploy wordt bewezen. De stellige uitsluiting van een specifieke Mysteryland-band voor Mirko is als precisiepunt benoemd: ontbrekende bevestiging is geen bewijs dat zo'n band niet bestaat. Geen chatbotcode aangepast naar aanleiding van dit bericht.
