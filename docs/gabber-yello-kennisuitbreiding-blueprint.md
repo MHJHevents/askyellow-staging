@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.5.2 — 29 oktober 2026
+Versie 1.6 — 30 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -76,9 +76,19 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - De tweede praktijkproef hield het onderwerp vast en toonde geen ongerelateerde bronnen, maar de strenge citatiecontrole gaf een algemene terugvalzin ondanks de expliciete pauze in de kennis. De hierboven beschreven beperkte kennisterugval is daarom toegevoegd; de strenge broncontrole wordt niet losgelaten. De herhaalde praktijkproef moet ook bevestigen dat het antwoord over 2026 weer inhoudelijk bruikbaar is.
 - Deze reparatie wordt uitsluitend op askyellow-staging/main gepubliceerd. Praktijktest na de Render-deploy volgt afzonderlijk; offline tests zijn geen garantie dat ieder modelantwoord correct is. Live blijft op bea850a5fedb031626fe8942481ea380ce5593b4 totdat Dennis afzonderlijk de gouden knop geeft.
 
+
+## Gouden knop en kennisrelease ronde 3 op 30 oktober 2026
+- Dennis heeft de stagingchat zelf gecontroleerd, is tevreden en heeft expliciet toestemming gegeven deel 3 naar main door te zetten.
+- Productierepository askyellow-ai/main is bijgewerkt met de geaccepteerde ronde-3-kennis, de drie Mirko-consistentiecorrecties in ronde 7 en de bestaande offline retrievaltest. Releasecommit: 6a9a7ff9bb3b5c69d54d89f6e20f2d2797548e07. Vorige productiecommit: bea850a5fedb031626fe8942481ea380ce5593b4.
+- De drie productieblobs zijn identiek aan stagingcommit 9181e234ebaed7db7ffd4fb24c8142490896425f. De vergelijking met de vorige productiecommit toont uitsluitend deze drie bestanden; main is na de overdracht opnieuw gecontroleerd.
+- De kennisloader is op beide omgevingen identiek. De bestaande stagingtests zijn bij deze kennisoverdracht niet opnieuw uitgevoerd; dit verslag claimt geen nieuwe testuitslag.
+- De latere wijzigingen aan chat.py, gabber_context.py, gabber_web.py en llm.py zijn niet onderdeel van deze beperkte kennisrelease en blijven op staging.
+- De Render-deploy en een nieuw antwoord van de draaiende productiechat zijn vanuit deze sessie nog niet bevestigd.
+- Deel 4 is als volgende kennisuitbreiding gestart vanuit de bestaande ronde-4-tekst. Nieuwe voorstellen en correcties blijven ter review; nog geen runtimepublicatie van deel 4.
+
 ## Volgende stappen
 1. Ronde 1 en 2 afgerond: inhoud goedgekeurd, staging geaccepteerd, gouden knop ontvangen, livepromotie uitgevoerd en productieantwoord gecontroleerd.
-2. Ronde 3 op staging testen; daarna pas met expliciete gouden knop naar live. Rondes 4 tot en met 7 verder uitbreiden op basis van hun bestaande goedgekeurde teksten.
+2. Ronde 3 staat na de gouden knop op askyellow-ai/main; de draaiende productie nog onafhankelijk controleren. Ronde 4 uitbreiden op basis van de bestaande tekst en voorleggen ter review.
 3. De tijdlaag in de overige rondes en operationele kennis nalopen voordat die worden gepubliceerd; deze publicaties corrigeren verwijzingen binnen ronde 2 en 3 en de expliciet bevestigde Mirko-zinnen in ronde 7.
 4. Stagingwijzigingen uit de testsessie van september zijn hier niet opnieuw geïnspecteerd. Hun deploystatus en werking moeten vóór nieuwe implementatie worden vastgesteld; eerdere vermoedens over Render zijn geen bevestigde status.
 5. Gerichte kennis- en gedragstests na integratie, gevolgd door expliciete livegoedkeuring.
