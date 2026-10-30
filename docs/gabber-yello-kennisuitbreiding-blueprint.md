@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.12 — 30 oktober 2026
+Versie 1.13 — 30 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -192,3 +192,16 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 2. Na afzonderlijke gouden knop de geaccepteerde stagingkennis gecontroleerd naar askyellow-ai/main overzetten.
 3. Fers concrete tracklijst later verifiëren en als aanvulling voorleggen.
 4. Ronde 7 en de hakkenworkshop blijven latere fasen; geen inhoud of voorkeuren vooruit invullen.
+
+
+## Bijschaven MHJH, feestnamen en tracknamen op staging
+- Dennis meldde een productiegesprek waarin Kom Tie Dan Hè!, de MHJH-feestnaam en Den Haag Hakkûh niet concreet werden onderscheiden. De bot herhaalde een vage culturele verwijzing en deed een ongefundeerde negatieve rechtenclaim. Er is in dit bericht geen gouden knop voor ronde 6 of deze reparatie gegeven.
+- De eigen eerdere formuleringen van Dennis zijn via Personal Context teruggevonden: MHJH Events is de organisator van het feest/concept Komt Tie Dan He – Den Haag Hakkûh; Den Haag Hakkûh II is de tweede editie. Geen nieuwe overkoepelende/submerkhiërarchie afgeleid.
+- De expliciete naamcontext noemt organisator, feesttitel en afzonderlijke tracks. De oude geforceerde aanname dat iedere vraag over Den Haag Hakkûh een verwarring tussen 1993 en 2023 is, is vervangen door de relevante relaties en de instructie de huidige vraag te beantwoorden.
+- Korte verduidelijkingsvragen zoals 'die snap ik niet kun je dat beter uitleggen' krijgen deze context alleen wanneer een recente gebruikersvraag het onderwerp al benoemde. De laatste acht berichten begrenzen de context; een onderwerpwissel stopt de overdracht en een assistentbewering is geen feitenbron of zelfstandig naamanker.
+- In chat.py is alleen de bestaande kennisaanroep in gabber_yello_chat uitgebreid met de reeds opgehaalde historie. Alle veertien overige functies behouden hun oorspronkelijke AST. Er komt geen extra modelaanroep, databasequery of internetzoekactie voor deze naamcontext bij.
+- De bestaande MHJH-kennis en ronde-5-passage zijn gelijkgetrokken: eerst uitleggen wie het feest organiseert en hoe het heet; pas waar relevant de culturele verwijzing naar de plaat. Geen positief of negatief oordeel over MHJH-rechten, licenties, toestemming, contracten of labelrol afleiden uit artiestcredits. Geen algemene uitspraak dat MHJH nooit tracks of anthems uitbrengt.
+- De officiële Top 40-pagina is opnieuw via de browser gelezen op 30 oktober 2026: 2005, piekpositie 4, acht weken totaal. De kennis en naamcontext verbieden daaruit een aantal weken op positie 4 af te leiden. Bron: https://www.top40.nl/dj-norman-vs-darkraver/dj-norman-vs-darkraver-kom-tie-dan-he-9352.
+- 74 offline unittest-methoden slagen, inclusief de volledige gemelde keten aan de echte handler/modelgrens met gemockte diensten, begrensde vervolgcontext, onderwerpwissels, bronfiltering, agenda-regressies en de 89 bestaande kennisvraagcontroles. Twee gewijzigde Pythonbestanden zijn syntactisch gecontroleerd. Dit bewijst geen daadwerkelijke modelantwoorden.
+- De publicatie blijft beperkt tot askyellow-staging/main: core/mhjh_context.py, de ene aanroep in chat.py, mhjh.json, de gerichte ronde-5-verduidelijkingen, een nieuwe regressietest en deze blueprint. Productie blijft op 309a2960060673d21bd4a518559df4a6dee43cc2.
+- De bestaande inhoudelijke goedkeuring van ronde 6 en de inzet van gewone taal bij vaktermen blijven behouden. Deze reparatie is een aparte stagingverbetering; ronde 7 is nog niet gestart.
