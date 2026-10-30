@@ -62,7 +62,7 @@ White label beschrijft volgens de Discogs-formatrichtlijn een plaat waarvan de m
 
 Promo verwijst naar het promotiedoel van een uitgave. Een testpersing, white label en promo kunnen kenmerken delen, maar betekenen verschillende dingen. Kijk naar de markering en herkomst van de concrete uitgave. [N1](https://support.discogs.com/hc/en-us/articles/360005006654-Database-Guidelines-6-Format)
 
-### Catalogusnummer
+### Catalogusnummer en matrixnummer op vinyl
 
 Een code waarmee een label een uitgave in zijn catalogus aanduidt. Een catalogusnummer identificeert niet op zichzelf iedere persing uniek. Eén uitgave kan meerdere catalogusnummers hebben; een labelnummer is bovendien iets anders dan een distributiecode. Bekijk label, nummer, formaat en overige persingsgegevens samen. [N2](https://support.discogs.com/hc/en-us/articles/360005006614-Database-Guidelines-4-Label-Catalog-Number)
 

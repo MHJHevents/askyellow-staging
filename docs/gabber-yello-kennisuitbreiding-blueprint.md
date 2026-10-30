@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.11 — 30 oktober 2026
+Versie 1.12 — 30 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -174,3 +174,21 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 2. Fers concrete lijst met tracks en labels later gericht controleren en als afzonderlijke aanvulling voorleggen.
 3. Na inhoudelijk akkoord de geselecteerde ronde-6-kennis naar staging, gericht testen en vervolgens wachten op afzonderlijke gouden knop voor live.
 4. Ronde 7 en de toekomstige hakkenworkshop blijven latere fasen. Geen voorkeuren, persoonlijke verhalen of workshopinhoud vooruit invullen.
+
+## Ronde 6 goedgekeurd voor staging op 30 oktober 2026
+- Dennis heeft de volledige ronde 6 doorgenomen, zeven reviewantwoorden gegeven en expliciet opdracht gegeven deze naar staging te zetten. Geen liveopdracht.
+- De zeven antwoorden en de afsluitende publicatieopdracht zijn woordelijk in blauw in dezelfde HTML-review bewaard. Goedgekeurde aanvullingen staan zwart met gele markering. De bestaande zwarte basis en het eerdere blauwe testgesprek blijven reviewhistorie.
+- De kanttekening bij cue, beatgrid, sync, DVS en stems is verwerkt: gewone taal als uitgangspunt, vaktermen alleen wanneer relevant of gevraagd, een noodzakelijke term bij eerste gebruik kort uitleggen en geen dj- of productiekennis veronderstellen. De technische onderdelen dragen dezelfde begrenzing.
+- De goedgekeurde contextregels, taalherkomst van gabber, white-labelcorrectie, bootlegnuance, BPM/pitch-uitleg, technische definities, releasecreditregels, vinylvoorkeur en vriendelijk corrigeren zijn geselecteerd voor de runtime. De oude white-labeltabel en de te algemene contextvoorrang zijn daarmee gelijkgetrokken.
+- Geen nieuwe Haagse woorden toegevoegd; de bestaande uitleg blijft behouden. Fers concrete tracklijst volgt later. Geen persoonlijke herinneringen of toekomstige hakkenworkshop ingevuld.
+- Reviewvragen, blauwe reacties, het oude testgesprek en de ongeverifieerde Speed Freak-titelkoppeling staan niet in de runtime. De kennis bevat algemene regels om onbevestigde credits niet te herhalen.
+- Twee inhoudelijk beschrijvende koppen zijn voor de bestaande selectie verduidelijkt: de bootlegpassage in ronde 6 en de bestaande kop bij catalogusnummer/matrixnummer in ronde 5. Bij ronde 5 verandert alleen die kop; de eerder goedgekeurde uitleg blijft inhoudelijk gelijk.
+- Op een met de actuele stagingtree vergeleken kennissnapshot slagen tien unittest-methoden met 89 vraagcontroles voor ronde 1 tot en met 6 en de praktische lockerinfo, plus structurele controles. De tests gebruiken de echte ongewijzigde kennisloader, maximaal drie passages en hetzelfde contextbudget; geen model-, provider- of databaseaanroepen.
+- De stagingpublicatie wijzigt ronde 6, de ene ronde-5-kop, de bestaande retrievaltest en deze blueprint. Geen overige applicatiecode of secrets gewijzigd. Offline tests bevestigen geen echte modelantwoorden of Render-deploy.
+- Productierepository askyellow-ai/main blijft in deze stap ongemoeid; livepromotie wacht op Dennis' stagingcontrole en afzonderlijke gouden knop.
+
+## Actuele vervolgstappen na goedkeuring ronde 6
+1. De nieuwe ronde 6 in de stagingchat controleren, met extra aandacht voor gewone taal bij vaktermen.
+2. Na afzonderlijke gouden knop de geaccepteerde stagingkennis gecontroleerd naar askyellow-ai/main overzetten.
+3. Fers concrete tracklijst later verifiëren en als aanvulling voorleggen.
+4. Ronde 7 en de hakkenworkshop blijven latere fasen; geen inhoud of voorkeuren vooruit invullen.
