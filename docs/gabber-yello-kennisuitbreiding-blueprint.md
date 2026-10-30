@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.13 — 30 oktober 2026
+Versie 1.14 — 30 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -205,3 +205,10 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - 74 offline unittest-methoden slagen, inclusief de volledige gemelde keten aan de echte handler/modelgrens met gemockte diensten, begrensde vervolgcontext, onderwerpwissels, bronfiltering, agenda-regressies en de 89 bestaande kennisvraagcontroles. Twee gewijzigde Pythonbestanden zijn syntactisch gecontroleerd. Dit bewijst geen daadwerkelijke modelantwoorden.
 - De publicatie blijft beperkt tot askyellow-staging/main: core/mhjh_context.py, de ene aanroep in chat.py, mhjh.json, de gerichte ronde-5-verduidelijkingen, een nieuwe regressietest en deze blueprint. Productie blijft op 309a2960060673d21bd4a518559df4a6dee43cc2.
 - De bestaande inhoudelijke goedkeuring van ronde 6 en de inzet van gewone taal bij vaktermen blijven behouden. Deze reparatie is een aparte stagingverbetering; ronde 7 is nog niet gestart.
+
+
+## Praktijkproef en afronding naamreparatie
+- Render heeft stagingcommit fc2b148d6b31f2eb0596f6a62756404e75208aeb succesvol gedeployed. De volledige gemelde keten is daarna via de staging-API met een nieuwe geïsoleerde gast-sessie getest. Alle vijf antwoorden gebruikten kennis, zonder webbronnen of accountherkenning.
+- De echte antwoorden benoemden MHJH Events als organisator, Komt Tie Dan He – Den Haag Hakkûh als feesttitel en de track uit 2005 apart. De laatste verduidelijking bevestigde Den Haag Hakkûh als deel van de feestnaam. De fout over vier weken op nummer 4 en de ongefundeerde negatieve rechtenclaim kwamen niet terug.
+- De proef maakte nog een onjuiste afkortinguitleg zichtbaar: MHJH werd uitgelegd als MHJH Events. De naamcontext noemt daarom nu ook expliciet Mijn Huis Jouw Huis. Bij herhaald onbegrip krijgt de assistent de instructie maximaal drie korte concrete zinnen te gebruiken.
+- Na deze naverbetering slagen dezelfde 74 offline testmethoden. De herhaalde praktijkproef volgt na de nieuwe stagingdeploy; een model kan nog steeds variëren in formulering. Main is niet gewijzigd.

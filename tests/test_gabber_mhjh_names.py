@@ -12,6 +12,7 @@ from test_gabber_followup_sources import load_chat_handler
 class MHJHNamesTests(unittest.TestCase):
     def assert_naming(self, text):
         self.assertIn("MHJH Events is de organisator", text)
+        self.assertIn("MHJH betekent Mijn Huis Jouw Huis", text)
         self.assertIn("Komt Tie Dan He – Den Haag Hakkûh", text)
         self.assertIn("DJ Norman vs. Darkraver", text)
         self.assertIn("hoogste positie 4, acht weken totaal", text)
@@ -52,7 +53,7 @@ class MHJHNamesTests(unittest.TestCase):
                 result = handler({"session_id":"isolated-names","message":message},None,Mock())
                 model.assert_called_once()
                 self.assert_naming(model.call_args.kwargs["kb_answer"])
-                self.assertIn("korter concreet voorbeeld", model.call_args.kwargs["kb_answer"])
+                self.assertIn("maximaal drie korte zinnen", model.call_args.kwargs["kb_answer"])
                 self.assertFalse(result["web_used"])
                 history += [{"role":"user","content":message},{"role":"assistant","content":bad_reply}]
 

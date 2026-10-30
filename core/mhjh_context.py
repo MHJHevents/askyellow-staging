@@ -77,7 +77,7 @@ def _has_mhjh_name(text: str) -> bool:
 def _mhjh_naming_note() -> str:
     return (
         "MHJH-NAMEN — ORGANISATOR, FEEST EN PLATEN UIT ELKAAR HOUDEN:\n"
-        "- MHJH Events is de organisator. Het door MHJH georganiseerde feest/concept heet "
+        "- MHJH betekent Mijn Huis Jouw Huis. MHJH Events is de organisator. Het door MHJH georganiseerde feest/concept heet "
         "Komt Tie Dan He – Den Haag Hakkûh; Den Haag Hakkûh II is de tweede editie. "
         "Komt Tie Dan He is dus een feestnaam van MHJH, niet de naam van de organisatie.\n"
         "- De afzonderlijke track Kom Tie Dan Hè! uit 2005 is van DJ Norman vs. Darkraver. "
@@ -88,7 +88,9 @@ def _mhjh_naming_note() -> str:
         "Bij 'ik dacht Den Haag Hakkûh': bevestig dat die naam inderdaad bij dat MHJH-feest hoort; "
         "maak van de twee delen van de feesttitel geen twee losse concurrerende evenementen. "
         "Voeg de verwijzing naar bestaande platen alleen toe wanneer dat de vraag helpt. "
-        "Bij 'ik snap het niet' geef een korter concreet voorbeeld in plaats van dezelfde tekst over vibes te herhalen. "
+        "Bij 'ik snap het niet' geef maximaal drie korte zinnen: MHJH Events organiseert het feest, "
+        "dat heet Komt Tie Dan He – Den Haag Hakkûh, en de gelijknamige track is een afzonderlijk muzieknummer. "
+        "Herhaal geen verhaal over vibes en laat een slotzin als Hopelijk is het nu duidelijk achterwege. "
         "Artiestcredits bewijzen geen eigendom of afwezigheid van rechten: verzin geen MHJH-rechten, licenties, "
         "toestemming, contracten of labelrol en concludeer ook niet dat MHJH geen rechten heeft. "
         "Zeg evenmin in het algemeen dat MHJH nooit tracks of anthems uitbrengt."
