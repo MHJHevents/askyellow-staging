@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.7 — 30 oktober 2026
+Versie 1.8 — 30 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -108,3 +108,12 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - Wens voor volgende fase vastgelegd: een echte hakkenworkshop die Gabber Yello kan geven. Die workshop is nog niet gebouwd en heeft nog geen uitgewerkt of goedgekeurd lesprogramma.
 - Voorlopig geen nieuw familie- of reisverhaal. Dennis komt op mogelijke verdere wijzigingen in een volgende fase terug. Dit is geen onvoorwaardelijke goedkeuring van de volledige ronde en geen publicatieopdracht.
 - Dennis deelde een positief testgesprek over Mysteryland en Mirko. De testomgeving is niet genoemd, zodat hiermee geen productie-deploy wordt bewezen. De stellige uitsluiting van een specifieke Mysteryland-band voor Mirko is als precisiepunt benoemd: ontbrekende bevestiging is geen bewijs dat zo'n band niet bestaat. Geen chatbotcode aangepast naar aanleiding van dit bericht.
+
+
+## Ronde 4 goedgekeurd voor staging op 30 oktober 2026
+- Dennis heeft de verwerkte ronde 4 expliciet volledig goedgekeurd en opdracht gegeven deze naar staging te zetten. Dit omvat de nieuwe Cavello-verdieping, de toegeschreven klassieke look en de lockerprijscorrectie. Geen liveopdracht.
+- Alleen de goedgekeurde kennis is geselecteerd voor de runtime. De blauwe feedback, reviewvragen, redactionele voorstellen en toekomstige hakkenworkshop zijn niet meegepubliceerd. De oorspronkelijke reviewhistorie blijft bewaard.
+- De ongedateerde lockerprijs is uit ronde 4 en de conflicterende praktische blokken partyinfo.json en whitehouse.json vervangen door de goedgekeurde verwijzing naar de informatie van de concrete editie. Er is geen nieuwe prijs of lockerlocatie ingevuld.
+- De bestaande kennisloader, drie-passagelimiet en contextbudget blijven ongewijzigd. Eén kop in de nieuwe schoenverdieping noemt het concrete onderwerp expliciet zodat de bestaande kennisselectie de passage terugvindt.
+- Op een geïsoleerde snapshot van de actuele stagingkennis zijn zes unittest-methoden geslaagd: 48 vraagcontroles voor rondes 1 tot en met 4 en lockers, plus controle dat ronde 4 geen reviewvragen of beloftes over de nog niet gebouwde workshop bevat. De tests gebruiken de echte bestaande kennisloader, zonder modelaanroepen, secrets of gesprekken.
+- Deze publicatie wijzigt alleen ronde 4, de twee praktische kennisblokken, de bestaande retrievaltest en deze blueprint op askyellow-staging/main. askyellow-ai/live blijft ongewijzigd. Functionele controle na Render-deploy is niet door de offline tests bewezen.
