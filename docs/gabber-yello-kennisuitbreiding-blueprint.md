@@ -93,3 +93,8 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 4. Stagingwijzigingen uit de testsessie van september zijn hier niet opnieuw geïnspecteerd. Hun deploystatus en werking moeten vóór nieuwe implementatie worden vastgesteld; eerdere vermoedens over Render zijn geen bevestigde status.
 5. Gerichte kennis- en gedragstests na integratie, gevolgd door expliciete livegoedkeuring.
 
+
+## Reviewvoorbereiding ronde 4 op 30 oktober 2026
+- Bestaande ronde-4-basis volledig behouden. Nieuwe verdieping en correctievoorstellen zijn als afzonderlijke rode aanvulling uitgewerkt, met tien bronverwijzingen en reviewvragen voor Dennis en Fer.
+- Volledige leesversie: Gabber_Yello_Ronde_4_AANVULLINGEN_ROOD.html. Deze bevat de zwarte basis en rode voorstellen. De documentruntime kon niet worden geladen; er is daarom nog geen gerenderde en visueel gecontroleerde DOCX-versie geleverd.
+- De ongedateerde Whitehouse-lockerprijs wordt uitsluitend als correctievoorstel behandeld; er is geen actuele prijs verzonnen. Geen ronde-4-inhoud naar de runtime gepubliceerd.
