@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.10 — 30 oktober 2026
+Versie 1.11 — 30 oktober 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -144,8 +144,33 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - Deze stagingpublicatie wijzigt uitsluitend het ronde-5-kennisbestand, de bestaande retrievaltest en deze blueprint. De loader en overige applicatiecode zijn ongewijzigd. Het Render-deployresultaat en echte modelantwoorden na deze publicatie zijn niet door de offline tests bewezen.
 - Productierepository askyellow-ai/main wordt in deze ronde niet gewijzigd. Livepromotie wacht op Dennis' stagingcontrole en afzonderlijke gouden knop.
 
-## Eerstvolgende stappen na deze stagingpublicatie
+## Eerstvolgende stappen na de stagingpublicatie (stand vóór de gouden knop ronde 5)
 1. Dennis en Fer controleren de bijgewerkte ronde 5 in de stagingchat.
 2. Fers concrete tracklijst later ontvangen, gericht verifiëren en als nieuwe aanvulling voorleggen.
 3. Alleen na afzonderlijke gouden knop de geaccepteerde ronde 5 naar askyellow-ai/main overzetten.
 4. Daarna de volgende afgesproken kennisronde oppakken; persoonlijke herinneringen en de toekomstige hakkenworkshop niet zonder nieuwe inhoud invullen.
+
+
+## Gouden knop ronde 5 op 30 oktober 2026
+- Dennis heeft de huidige ronde 5 geaccepteerd, een testgesprek gedeeld en expliciet toestemming gegeven deze naar main te zetten en door te gaan naar ronde 6.
+- Productierepository askyellow-ai/main staat op 309a2960060673d21bd4a518559df4a6dee43cc2. Vorige productiecommit voor een gerichte rollback: 6babe6264762ab864b8d2a51f97a9127a13ee06e. De branch is na publicatie opnieuw gelezen.
+- De release wijzigt exact twee bestanden: de geaccepteerde ronde-5-kennis en tests/test_gabber_reviewed_rounds.py. Hun inhoud is identiek aan de geaccepteerde stagingcommit 35f9420c8ea56c78b2d288b7d44c967c52748f25. Geen overige applicatiecode, kennisloader of operationele informatie meegepromoveerd.
+- De bestaande kenniscontroles zijn opnieuw uitgevoerd met de productie-loader en productiekennis, inclusief de afwijkende productieversies van lineup.json en tickets.json. Acht unittest-methoden met 69 vraagcontroles en structurele controles slagen. Dit zijn offline tests zonder echte model-, database- of provideroproepen.
+- Render is vervolgens rechtstreeks gecontroleerd. Het dashboard noemt commit 309a2960060673d21bd4a518559df4a6dee43cc2 als Last successfully deployed commit en toont Live. Deploydetail: https://dashboard.render.com/web/srv-d46atckhg0os73ef6ct0/deploys/dep-dbicp7g473hc73f0gd50. Daarmee is deze deployment bevestigd; geen nieuwe productie-modelantwoorden onafhankelijk getest.
+- Het gedeelde testgesprek bevat verbeterpunten: classics worden te gemakkelijk als white labels bevestigd; concrete persingen en een genoemde trackcredit worden niet onderbouwd; vinylvoorkeur wordt als algemene technische superioriteit verwoord; hardstyle wordt zonder nuance in een lijst hardcoresubgenres gezet. Deze uitingen zijn testmateriaal, geen nieuw goedgekeurde feiten.
+- De livepromotie verandert alleen de al goedgekeurde ronde 5. De nieuwe correctievoorstellen zijn herkenbaar rood in ronde 6 opgenomen en wachten op review. Fers tracklijst is nog niet ontvangen.
+
+## Ronde 6 voorbereid voor inhoudelijke review
+- De actuele volledige Library-basis Gabber_Yello_Hardcorekennis_Ronde_6_Termen_en_Dubbele_Betekenissen.md is gelezen en zwart behouden in Gabber_Yello_Ronde_6_AANVULLINGEN_ROOD.html.
+- Veertien nieuwe rode onderdelen verdiepen contextwissels, de taalherkomst van gabber, white label versus classics, bootleggebruik, BPM/pitch, beatmatching/sync, cue, beatgrid, DVS, stems, clipping/headroom, releasecredits, vinylvoorkeur en vriendelijk corrigeren. De aanvulling bevat acht bronnen en zeven gerichte reviewvragen.
+- Acht bronpagina's zijn via de browser gelezen op 30 oktober 2026: Etymologiebank/EWN, twee Discogs-richtlijnen, Ableton en drie Mixxx-handleidingpagina's plus de Native Instruments-Stems-pagina. De webzoekfunctie gaf een fout. Technische handleidingen worden gebruikt voor hun eigen techniek, niet als gezag over een officiële gabbernorm.
+- De koppeling The Speed Freak — The Ultimate Seduction uit het testgesprek is niet als geverifieerd releasefeit opgenomen. Het concrete voorbeeld wacht op vaststelling van de bedoelde uitgave; er wordt geen vervangende artiest gegokt.
+- Het aangeleverde testgesprek is als aparte blauwe bewaartekst toegevoegd en nadrukkelijk als ongeverifieerd testmateriaal gemarkeerd. Geen persoonlijke herinneringen van Dennis of Fer verzonnen.
+- HTML-structuur, kleurregels, bronlinks, aanwezigheid van de volledige basis en het ontbreken van uitvoerbare scripts zijn gecontroleerd. Een lokale browserweergave was door het URL-beleid geblokkeerd; de pagina is daarom niet visueel in de browser gekeurd. Er is geen DOCX-render geclaimd.
+- Ronde 6 is uitsluitend een reviewdocument. Geen nieuwe ronde-6-kennis of gespreksregels op staging of live gezet.
+
+## Actuele vervolgstappen
+1. Dennis en Fer lezen ronde 6 en geven feedback; voorstellen rood, antwoorden blauw, goedkeuring later geel verwerken.
+2. Fers concrete lijst met tracks en labels later gericht controleren en als afzonderlijke aanvulling voorleggen.
+3. Na inhoudelijk akkoord de geselecteerde ronde-6-kennis naar staging, gericht testen en vervolgens wachten op afzonderlijke gouden knop voor live.
+4. Ronde 7 en de toekomstige hakkenworkshop blijven latere fasen. Geen voorkeuren, persoonlijke verhalen of workshopinhoud vooruit invullen.
