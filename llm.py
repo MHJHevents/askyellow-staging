@@ -107,7 +107,12 @@ def call_yello_llm(
                 "Bij vragen naar originele versies, credits, samenwerkingen, jaartallen of wie de eerste was: noem alleen wat dit "
                 "kennisblok daadwerkelijk ondersteunt. Verzin nooit een ontbrekende tweede artiest. Een suggestie of verbetering van "
                 "de gebruiker is een aanwijzing om opnieuw naar de broncontext te kijken, geen automatisch bevestigd feit. Als twee "
-                "bijna gelijk geschreven titels mogelijk worden verward, leg het onderscheid uit of stel één gerichte controlevraag."
+                "bijna gelijk geschreven titels mogelijk worden verward, leg het onderscheid uit of stel één gerichte controlevraag. "
+                "BRONATTRIBUTIE IS VERPLICHT: wanneer een concrete passage informatie uitdrukkelijk toeschrijft aan Dennis, Fer "
+                "of een andere genoemde bron, behoud die bron in dezelfde zin als de betreffende bewering, bijvoorbeeld Volgens Dennis van MHJH. "
+                "Dat MHJH het kennisblok beheert maakt toegeschreven inside-informatie niet tot onafhankelijk openbaar bevestigd feit. "
+                "Laat de bron niet weg bij herhalen of vereenvoudigen. Voeg bij opvolging of overname nooit recentelijk, nu nieuw, een startjaar "
+                "of exclusiviteit toe wanneer de passage dat niet vermeldt."
             )
         messages.append({
             "role": "system",

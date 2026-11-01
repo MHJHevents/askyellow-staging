@@ -41,5 +41,15 @@ class ArtistLabelAdditionTests(unittest.TestCase):
                 self.assertIn("iets anders dan een afzonderlijke trackrelease", context)
                 self.assertNotIn("HARD NAAMVANGRAIL", context)
 
+    def test_explicit_source_requirement_reaches_actual_model_prompt(self):
+        import test_gabber_round7_persona as persona_tests
+        question = "Wat heeft DaBuddha met Mirko en Thunderdome te maken?"
+        messages = persona_tests.RoundSevenTests().call_boundary(question, get_relevant_mhjh_context(question))
+        knowledge = next(m["content"] for m in messages if "Relevante MHJH-kennis" in m["content"])
+        self.assertIn("BRONATTRIBUTIE IS VERPLICHT", knowledge)
+        self.assertIn("behoud die bron in dezelfde zin", knowledge)
+        self.assertIn("Volgens Dennis van MHJH", knowledge)
+        self.assertIn("nooit recentelijk", knowledge)
+
 if __name__ == "__main__":
     unittest.main()
