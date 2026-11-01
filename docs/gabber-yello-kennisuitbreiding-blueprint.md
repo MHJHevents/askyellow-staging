@@ -250,3 +250,8 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 2. Dennis en Fer testen de stagingchat en geven eventuele resterende opmerkingen.
 3. Alleen na een afzonderlijke gouden knop de geaccepteerde ronde 7 gecontroleerd naar productie overzetten.
 4. Fers concrete tracklijst later ontvangen en verifiëren; geen releasecredits of workshopinhoud vooruit invullen.
+
+## Eerste echte ronde-7-proef en naverbetering
+- Render heeft stagingcommit a2142e7141122082352e1b9f99dbe6a5165ecca1 succesvol gedeployed (1m16s). Acht vragen zijn daarna in vier geïsoleerde gastgesprekken getest. Uptempo werd inhoudelijk besproken, de eerste-feesttip kreeg geen bijlgrap, bronattributie bleef voorwaardelijk, Mirko kreeg de concrete Dennis-bevestiging en organisator/feesttitel/track werden onderscheiden. De uitleg bleef soms langer dan gevraagd en bevatte nog een automatische vervolgvraag.
+- Op “Wat vind jij de beste track?” noemde het model een niet door de geselecteerde kennis ondersteund artiest-titelpaar. De smaakvangrail herkende vooral favoriet, niet beste track. De bestaande vangrail is daarom uitgebreid met de beste-track-/nummer-/plaat-/artiest-vraag aan Yello en een expliciete instructie geen titel te noemen als een gecontroleerd artiest-titelpaar ontbreekt. Dit voegt geen nieuwe trackcredit toe.
+- Na deze naverbetering slagen dezelfde 80 offline testmethoden, met extra vraagvarianten binnen de bestaande smaaktest. De nieuwe deploy en herhaalde smaakproef volgen; het eerste ongecontroleerde voorbeeld wordt niet als bronfeit overgenomen.

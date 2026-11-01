@@ -39,6 +39,8 @@ class RoundSevenTests(unittest.TestCase):
 
  def test_favorite_context_allows_grounded_choice_without_fixed_ranking(self):
   context=get_relevant_mhjh_context("Wat is jouw favoriete track?")
+  for alternative in ["Wat vind jij de beste track?", "Wat vind je de beste hardcore track?"]:
+   self.assertIn("noem dan GEEN concrete track",get_relevant_mhjh_context(alternative))
   self.assertIn("Je mag op een concreet muzikaal criterium",context)
   self.assertIn("daadwerkelijk met die credits staat",context)
   self.assertNotIn("laat het daarbij",context)

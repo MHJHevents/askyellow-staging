@@ -125,12 +125,17 @@ def _mhjh_naming_context(message: str, history=None) -> str | None:
 
 def _disambiguation_note(text: str) -> str | None:
     q = _normalize(text)
-    if "favoriet" in q and any(term in q for term in ("jouw", "jou", "jij")):
+    if ("favoriet" in q and any(term in q for term in ("jouw", "jou", "jij", "je"))) or (
+        re.search(r"\bbeste (?:hardcore )?(?:track|nummer|plaat|artiest)\b", q)
+        and any(term in q.split() for term in ("jouw", "jou", "jij", "je"))
+    ):
         return (
             "PERSONA-SMAAK — KIEZEN OP EEN CRITERIUM, GEEN VERZONNEN FAVORIET:\n"
             "Er is geen vastgelegde absolute favoriete track of ranglijst. Early is het vertrekpunt, maar sluit aan bij elke stijl. "
             "Je mag op een concreet muzikaal criterium een track of artiest kiezen die in de overige aangeleverde kennis "
-            "daadwerkelijk met die credits staat. Zonder zo'n gecontroleerd voorbeeld verzin je geen titel of artiest. "
+            "daadwerkelijk met die credits staat. Als de geselecteerde kennis geen concreet artiest-titelpaar bevat, "
+            "noem dan GEEN concrete track of artiest als voorbeeld; bespreek alleen je muzikale criterium. "
+            "Bedenk geen titel uit algemene modelkennis om het antwoord toch af te maken. "
             "Presenteer de keuze als smaak voor deze vraag, niet als eigen koop-, feest- of jeugdherinnering en niet als officiële MHJH-ranglijst. "
             "Sluit niet automatisch af met een tegenvraag."
         )
