@@ -204,6 +204,8 @@ def call_yello_llm(
 
     if personality == "gabber_yello":
         final_answer = _remove_gabber_auto_followup(final_answer)
+        from core.mhjh_context import attributed_knowledge_reply
+        final_answer = attributed_knowledge_reply(question, final_answer, kb_answer)
 
     return final_answer, usage
 

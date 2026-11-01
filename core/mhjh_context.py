@@ -270,6 +270,29 @@ def unverified_person_reply(message: str, history=None) -> str | None:
     return f"Ik kan {display} niet betrouwbaar plaatsen."
 
 
+
+def attributed_knowledge_reply(question: str, answer: str, selected_context: str | None) -> str:
+    """Keep an explicitly marked, source-bound card intact when its claim is used."""
+    named_text = " " + _normalize((question or "") + " " + (answer or "")) + " "
+    answer_text = " " + _normalize(answer or "") + " "
+    # Cards come only from the selected reviewed knowledge, never chat history.
+    for section in re.split(r"(?m)^### ", selected_context or ""):
+        fields = {}
+        for key in ("namen", "trefwoorden", "antwoord"):
+            match = re.search(r"^Brongebonden " + key + r": ([^\n]{1,2000})$", section, re.MULTILINE)
+            if match:
+                fields[key] = match.group(1).strip()
+        if len(fields) != 3:
+            continue
+        names = [_normalize(value) for value in fields["namen"].split("|") if value.strip()]
+        terms = [_normalize(value) for value in fields["trefwoorden"].split("|") if value.strip()]
+        if any(" " + name + " " in named_text for name in names) and any(
+            " " + term + " " in answer_text for term in terms
+        ):
+            return fields["antwoord"]
+    return answer
+
+
 def _unknown_name_note(text: str, selected_context: str) -> str | None:
     """Flag capitalized names that are absent from the selected knowledge."""
     candidates = []

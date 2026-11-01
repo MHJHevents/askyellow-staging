@@ -51,5 +51,54 @@ class ArtistLabelAdditionTests(unittest.TestCase):
         self.assertIn("Volgens Dennis van MHJH", knowledge)
         self.assertIn("nooit recentelijk", knowledge)
 
+
+    def test_source_bound_card_replaces_unattributed_photo_claims_only(self):
+        from core.mhjh_context import attributed_knowledge_reply
+        context = get_relevant_mhjh_context("Wie is DaBuddha?")
+        for question, answer in [
+            ("Ken je dabudda?", "Hij is recentelijk de nieuwe officiële fotograaf van Thunderdome geworden."),
+            ("Wat heeft DaBuddha met Mirko te maken?", "DaBuddha nam het over van Mirko."),
+            ("Kun je DaBuddha korter uitleggen?", "DaBuddha is de fotograaf van Thunderdome."),
+        ]:
+            with self.subTest(question=question):
+                result = attributed_knowledge_reply(question, answer, context)
+                self.assertIn("Volgens Dennis van MHJH", result)
+                self.assertIn("overgenomen als officieel fotograaf van Thunderdome", result)
+                self.assertNotIn("recentelijk", result)
+                self.assertNotIn("nu de nieuwe", result)
+        for question, answer, selected in [
+            ("Wie is DaBuddha?", "DaBuddha is een dj.", context),
+            ("Ken je Bridgeway Records?", "Bridgeway is een platenlabel.", context),
+            ("Wie is DaBuddha?", "Hij is fotograaf van Thunderdome.", None),
+        ]:
+            self.assertEqual(attributed_knowledge_reply(question, answer, selected), answer)
+
+    def test_actual_answer_boundary_preserves_source_without_extra_model_call(self):
+        from types import SimpleNamespace
+        from core.personalities import get_personality_profile
+        source = ast.parse((ROOT / "llm.py").read_text(encoding="utf-8"))
+        function = next(n for n in source.body if isinstance(n, ast.FunctionDef) and n.name == "call_yello_llm")
+        question = "Ken je dabudda?"
+        raw = "Hij is recentelijk de nieuwe fotograaf van Thunderdome geworden."
+        for personality in ["gabber_yello", "yellowmind"]:
+            create = Mock(return_value=SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=raw))]))
+            ns = {
+                "os": SimpleNamespace(getenv=lambda key, default=None: default),
+                "client": SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create))),
+                "log_ai_token_usage": Mock(return_value={"tokens": 12}),
+                "get_personality_profile": get_personality_profile,
+                "YELLO_CORE_PROMPT": "Core",
+                "_remove_gabber_auto_followup": lambda s: s,
+            }
+            exec(compile(ast.fix_missing_locations(ast.Module(body=[function], type_ignores=[])), "llm.py", "exec"), ns)
+            answer, usage = ns["call_yello_llm"](question, "nl", get_relevant_mhjh_context(question), None, {}, personality=personality, knowledge_label="MHJH" if personality == "gabber_yello" else "AskYellow")
+            self.assertEqual(usage, {"tokens": 12})
+            create.assert_called_once()
+            if personality == "gabber_yello":
+                self.assertIn("Volgens Dennis van MHJH", answer)
+                self.assertNotIn("recentelijk", answer)
+            else:
+                self.assertEqual(answer, raw)
+
 if __name__ == "__main__":
     unittest.main()
