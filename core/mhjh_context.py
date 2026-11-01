@@ -45,7 +45,7 @@ QUERY_ALIASES = (
 NAME_IGNORE = {
     "als", "ben", "dat", "deze", "dit", "een", "haha", "heb", "heyyy", "het", "hoe", "ik",
     "mijn", "maar", "nee", "vertel", "waar", "wanneer", "wat", "weet", "welke",
-    "wie", "wil", "ja", "jij", "oei", "pfoe",
+    "wie", "wil", "ja", "jij", "oei", "pfoe", "ken", "kennen",
 }
 
 
