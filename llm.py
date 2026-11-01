@@ -224,6 +224,17 @@ def call_gabber_yello_llm(
     hints=None,
     history=None,
 ):
+    # Taste stays grounded when retrieval has no concrete reviewed track pair.
+    # A general model completion must not fill that gap with a new credit.
+    if "PERSONA-SMAAK — KIEZEN OP EEN CRITERIUM" in (kb_answer or "") and not re.search(
+        r"^\s*-\s+\*[^*\n]+\*\s+[—–]\s+\S", kb_answer or "", re.MULTILINE
+    ):
+        return (
+            "Een vaste nummer één heb ik niet. Voor mij telt vooral een eigen sound, "
+            "een goede opbouw en de juiste plaat op het juiste moment in de set.",
+            None,
+        )
+
     return call_yello_llm(
         question=question,
         language=language,

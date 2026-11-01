@@ -74,5 +74,22 @@ class RoundSevenTests(unittest.TestCase):
   self.assertIn("uitsluitend wanneer de aangeleverde kennis de herkomst van de specifieke passage vastlegt",profile)
   self.assertIn("Geef anders geen persoonlijke bronclaim",profile)
 
+ def test_gabber_wrapper_does_not_invent_a_pair_when_retrieval_has_none(self):
+  import re
+  source=ast.parse((ROOT/"llm.py").read_text(encoding="utf-8"))
+  wrapper=next(n for n in source.body if isinstance(n,ast.FunctionDef) and n.name=="call_gabber_yello_llm")
+  call=Mock(return_value=("grounded",{}))
+  ns={"re":re,"call_yello_llm":call}
+  exec(compile(ast.fix_missing_locations(ast.Module(body=[wrapper],type_ignores=[])),"llm.py","exec"),ns)
+  for question in ["Wat vind jij de beste track?", "Wat is jouw favoriete track?"]:
+   context=get_relevant_mhjh_context(question)
+   answer,usage=ns["call_gabber_yello_llm"](question,kb_answer=context)
+   self.assertIn("eigen sound",answer)
+   self.assertIsNone(usage)
+  call.assert_not_called()
+  context="PERSONA-SMAAK — KIEZEN OP EEN CRITERIUM\n- *Dominator* — Human Resource;"
+  self.assertEqual(ns["call_gabber_yello_llm"]("favoriete track?",kb_answer=context),("grounded",{}))
+  call.assert_called_once()
+
 if __name__=="__main__":
  unittest.main()
