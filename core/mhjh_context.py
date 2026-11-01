@@ -160,12 +160,128 @@ def _disambiguation_note(text: str) -> str | None:
     return None
 
 
+# Explicit person references work independently of capitalization.
+_PERSON_CUE = re.compile(
+    r"(?P<birthday>\bverjaardag(?:\s+gehad)?\s+van\b)|"
+    r"(?P<identity>\b(?:ken(?:nen)?\s+(?:je|jij|jullie)|wie\s+is)\b)",
+    re.IGNORECASE,
+)
+_PERSON_TAIL_STOP = {
+    "was", "waren", "is", "zijn", "heeft", "had", "heb", "hebben", "he",
+    "nou", "echt", "ook", "wel", "niet", "al", "eigenlijk", "dan", "toch",
+    "en", "maar", "omdat", "want", "die", "dat", "het", "op", "in",
+    "gezellig", "leuk", "druk", "gisteren", "vrijdag",
+}
+
+
+def _explicit_person_reference(text: str):
+    match = _PERSON_CUE.search(text or "")
+    if not match:
+        return None
+    tail = (text or "")[match.end():].lstrip(" @")
+    name_match = re.match(
+        r"[A-Za-zÀ-ÿ][\wÀ-ÿ'’\-]*(?:[ \t]+[A-Za-zÀ-ÿ][\wÀ-ÿ'’\-]*){0,3}",
+        tail,
+    )
+    if not name_match:
+        return None
+    words = []
+    for word in name_match.group(0).split():
+        if _normalize(word) in _PERSON_TAIL_STOP:
+            break
+        words.append(word)
+    if not words:
+        return None
+    name = " ".join(words)
+    if _normalize(words[0]) in (STOPWORDS | NAME_IGNORE | {"iemand", "iets", "ons", "jullie", "mensen"}):
+        return None
+    return ("birthday" if match.group("birthday") else "identity", name)
+
+
+@lru_cache(maxsize=1)
+def _reviewed_name_corpus() -> str:
+    # Local reviewed files are evidence; assistant messages never join this corpus.
+    parts = [block.get("answer", "") for block in _load_mhjh_knowledge()]
+    parts += [section["title"] + "\n" + section["body"] for section in _load_hardcore_sections()]
+    return " " + _normalize("\n".join(parts)) + " "
+
+
+def _name_is_reviewed(name: str) -> bool:
+    return " " + _normalize(name) + " " in _reviewed_name_corpus()
+
+
+def _prior_unsupported_reputation(name: str, history) -> bool:
+    needle = " " + _normalize(name) + " "
+    for turn in (history or [])[-8:]:
+        if turn.get("role") != "assistant" or not isinstance(turn.get("content"), str):
+            continue
+        for clause in re.split(r"[.!?;]|\bmaar\b", turn["content"], flags=re.IGNORECASE):
+            q = _normalize(clause)
+            if needle not in " " + q + " ":
+                continue
+            if any(denial in q for denial in ("niet betrouwbaar", "niet specifiek", "niet plaatsen", "niet onderbouwd")):
+                continue
+            if re.search(r"\b(?:bekend\w*|goede naam|grote naam|legende|icoon|pionier|dj|artiest)\b", q):
+                return True
+    return False
+
+
+def unverified_person_reply(message: str, history=None) -> str | None:
+    """Bounded smalltalk/identity fallback; it does not identify unknown people."""
+    # Keep real help requests and distress on the normal assistance route.
+    if re.search(
+        r"\b(?:help|pijn|ziek|onwel|ehbo|paniek|politie|letsel|bedreigd|bewusteloos|oververhit|zelfmoord)\b",
+        _normalize(message),
+    ):
+        return None
+    reference = _explicit_person_reference(message)
+    if not reference:
+        return None
+    kind, name = reference
+    if _normalize(name) in {"hem", "haar", "die", "diegene"}:
+        reference = None
+        for turn in reversed((history or [])[-8:]):
+            if turn.get("role") != "user" or not isinstance(turn.get("content"), str):
+                continue
+            reference = _explicit_person_reference(turn["content"])
+            # The nearest substantive user topic decides; don't use assistant claims.
+            break
+        if not reference or _normalize(reference[1]) in {"hem", "haar", "die", "diegene"}:
+            return None
+        name = reference[1]
+        kind = "identity"
+    if _name_is_reviewed(name):
+        return None
+    if kind == "birthday":
+        q = _normalize(message)
+        if "?" in message or re.search(r"\b(?:niet|ongezellig|vervelend|ruzie)\b", q) or not re.search(r"\b(?:ik|we|wij|gehad|geweest)\b", q):
+            return None
+        if re.search(r"\b(?:gezellig|leuk|tof|mooi)\b", q):
+            return "Klinkt gezellig, maat! Mooi dat je een leuke avond hebt gehad."
+        if "druk" in q.split():
+            return "Dat was dus een drukke avond, maat."
+        return "Je was dus op een verjaardag, maat."
+    display = name[0].upper() + name[1:]
+    if _prior_unsupported_reputation(name, history):
+        return (
+            "Dat ik die naam eerder als bekend in de scene neerzette, was niet onderbouwd. "
+            f"Ik kan {display} niet betrouwbaar plaatsen."
+        )
+    return f"Ik kan {display} niet betrouwbaar plaatsen."
+
+
 def _unknown_name_note(text: str, selected_context: str) -> str | None:
     """Flag capitalized names that are absent from the selected knowledge."""
     candidates = []
     for raw in re.findall(r"\b[A-ZÀ-Ý][A-Za-zÀ-ÿ0-9_-]{2,}\b", text or ""):
         name = _normalize(raw)
         if name and name not in NAME_IGNORE and name not in candidates:
+            candidates.append(name)
+
+    reference = _explicit_person_reference(text)
+    if reference and not _name_is_reviewed(reference[1]):
+        name = _normalize(reference[1])
+        if name not in candidates:
             candidates.append(name)
 
     if not candidates:

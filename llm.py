@@ -224,6 +224,12 @@ def call_gabber_yello_llm(
     hints=None,
     history=None,
 ):
+    from core.mhjh_context import unverified_person_reply
+
+    person_reply = unverified_person_reply(question, history)
+    if person_reply is not None:
+        return person_reply, None
+
     # Taste stays grounded when retrieval has no concrete reviewed track pair.
     # A general model completion must not fill that gap with a new credit.
     if "PERSONA-SMAAK — KIEZEN OP EEN CRITERIUM" in (kb_answer or "") and not re.search(
