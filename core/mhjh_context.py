@@ -127,11 +127,12 @@ def _disambiguation_note(text: str) -> str | None:
     q = _normalize(text)
     if "favoriet" in q and any(term in q for term in ("jouw", "jou", "jij")):
         return (
-            "HARD PERSONA-ANKER — GEEN FAVORIETE TRACK VERZINNEN:\n"
-            "Gabber Yello heeft bewust geen vastgelegde absolute favoriete track. Haar smaak ligt vooral bij early, Haagse "
-            "scenehistorie en platen met een eigen identiteit. Noem daarom geen exacte track als haar favoriet en verzin ook "
-            "geen zogenaamd passend trackvoorbeeld om toch aan de opdracht te voldoen. Zeg vriendelijk dat ze geen eerlijke "
-            "absolute nummer-één heeft en laat het daarbij; sluit niet af met een tegenvraag."
+            "PERSONA-SMAAK — KIEZEN OP EEN CRITERIUM, GEEN VERZONNEN FAVORIET:\n"
+            "Er is geen vastgelegde absolute favoriete track of ranglijst. Early is het vertrekpunt, maar sluit aan bij elke stijl. "
+            "Je mag op een concreet muzikaal criterium een track of artiest kiezen die in de overige aangeleverde kennis "
+            "daadwerkelijk met die credits staat. Zonder zo'n gecontroleerd voorbeeld verzin je geen titel of artiest. "
+            "Presenteer de keuze als smaak voor deze vraag, niet als eigen koop-, feest- of jeugdherinnering en niet als officiële MHJH-ranglijst. "
+            "Sluit niet automatisch af met een tegenvraag."
         )
     if any(term in q for term in ("anekdote", "anekdotes", "sterk verhaal", "sterke verhalen")):
         return (

@@ -1,6 +1,6 @@
 # Gabber Yello Kennisuitbreiding Blueprint
 
-Versie 1.14 — 30 oktober 2026
+Versie 1.17 — 1 november 2026
 
 ## Doel en uitgangspunt
 Breid de bestaande goedgekeurde hardcorekennis uit. Maak geen nieuwe basisronde die het eerdere werk herhaalt. Lever volledige themadocumenten aan, met relevante aanvullingen bij het bestaande onderwerp of in een duidelijk aanvullingshoofdstuk. Dennis, Fer en hun medecontroleur lezen de documenten; hun feedback wordt per ronde verwerkt.
@@ -212,3 +212,41 @@ Tijdens menselijke review kan het volgende document worden voorbereid binnen een
 - De echte antwoorden benoemden MHJH Events als organisator, Komt Tie Dan He – Den Haag Hakkûh als feesttitel en de track uit 2005 apart. De laatste verduidelijking bevestigde Den Haag Hakkûh als deel van de feestnaam. De fout over vier weken op nummer 4 en de ongefundeerde negatieve rechtenclaim kwamen niet terug.
 - De proef maakte nog een onjuiste afkortinguitleg zichtbaar: MHJH werd uitgelegd als MHJH Events. De naamcontext noemt daarom nu ook expliciet Mijn Huis Jouw Huis. Bij herhaald onbegrip krijgt de assistent de instructie maximaal drie korte concrete zinnen te gebruiken.
 - Na deze naverbetering slagen dezelfde 74 offline testmethoden. De herhaalde praktijkproef volgt na de nieuwe stagingdeploy; een model kan nog steeds variëren in formulering. Main is niet gewijzigd.
+
+## Gouden knop ronde 6 en naamreparatie op 30 oktober 2026
+- Dennis heeft expliciet de gouden knop gegeven: de geaccepteerde ronde 6 en de MHJH-naamreparatie mogen naar main.
+- Productierepository askyellow-ai/main is gecontroleerd bijgewerkt naar 36b44b58b1388de48f543a283e948f64efc0231b. Vorige productiecommit voor een gerichte rollback: 309a2960060673d21bd4a518559df4a6dee43cc2.
+- De release wijzigt precies zeven bestanden: core/mhjh_context.py, de ene kennisaanroep in chat.py, mhjh.json, de gerichte ronde-5-verduidelijkingen, ronde 6 en de twee bijbehorende tests. De zes overgenomen bestanden zijn byte-identiek aan stagingcommit 662be561dd22ea0c52318ab84f02a6789c941e6a. In chat.py is uitsluitend de history-parameter toegevoegd aan de bestaande kennisaanroep; de overige veertien functies behouden hun productie-AST.
+- De afwijkende liveversies van lineup.json, tickets.json en llm.py blijven behouden. Geen overige stagingcode, operationele informatie, databasewijzigingen of secrets meegepromoveerd.
+- De kandidaat is getest met de productiecode en productiekennis als basis: 74 offline unittest-methoden slagen, inclusief de 89 bestaande kennisvraagcontroles en de volledige gemelde naamketen aan de handler/modelgrens met gemockte diensten. Geen echte model-, database- of provideroproepen in deze tests.
+- De tweede echte stagingproef na deploy van 662be561dd22ea0c52318ab84f02a6789c941e6a gaf vijf antwoorden die organisator, volledige feesttitel en afzonderlijke tracks uit elkaar hielden, zonder de ongefundeerde rechtenclaim of verwarring over weken op piekpositie. De formulering bleef bij herhaald onbegrip soms uitvoeriger dan gevraagd.
+
+- Render heeft releasecommit 36b44b58b1388de48f543a283e948f64efc0231b succesvol gedeployed en toont Deploy succeeded|Live, duur 1m03s. Deploydetail: https://dashboard.render.com/web/srv-d46atckhg0os73ef6ct0/deploys/dep-dbidfan40ujc739b0oa0.
+- Daarna is de volledige gemelde keten via https://askyellow-ai.onrender.com/gabber-yello/chat in een nieuwe geïsoleerde gast-sessie getest. Alle vijf antwoorden gebruikten kennis, zonder webbronnen of accountherkenning. De eerste beurt gaf piekpositie 4 en acht weken totaal correct; de derde en vierde beurt onderscheiden de track van het feest en noemen MHJH als organisator. De ongefundeerde rechtenclaim kwam niet terug.
+- Restpunt uit deze productieproef: de tweede beurt herhaalde nog een vage culturele verwijzing; de laatste beurt gebruikte concept en evenement nog onnodig als verschillende labels en gaf de volledige gezamenlijke titel niet opnieuw. De vierde beurt noemde de volledige feesttitel wel correct. De release en deploy zijn bevestigd; deze proef is geen bewijs dat de formulering in ieder modelantwoord is opgelost.
+- De expliciete MHJH-context, de ronde-6-regels voor gewone taal en de nieuwe regressietests zijn nu live. Fers tracklijst is nog niet ontvangen. Ronde 7 en de toekomstige hakkenworkshop blijven afzonderlijke volgende fasen.
+
+## Actuele vervolgstappen na livegang ronde 6
+1. Het resterende formuleringgedrag rond de volledige feesttitel gericht evalueren bij verdere chatcontrole; geen volledige oplossing claimen op basis van alleen prompt- of offline tests.
+2. Fers concrete tracklijst later ontvangen en de bedoelde releases en versies verifiëren.
+3. Ronde 7 of de hakkenworkshop pas uitwerken wanneer die fase wordt opgepakt; geen persoonlijke voorkeuren of verhalen invullen.
+
+
+## Ronde 7 beoordeeld en geselecteerd voor staging op 1 november 2026
+- Dennis heeft de laatste van de zeven kennisrondes volledig doorgenomen, acht reviewantwoorden gegeven en daarna expliciet opdracht gegeven de verwerkte ronde naar staging te zetten. Geen gouden knop voor productie.
+- De volledige leesversie Gabber_Yello_Ronde_7_AANVULLINGEN_ROOD.html bevat de bestaande basis, veertien inhoudelijk goedgekeurde aanvullingen in zwart met geel en alle acht antwoorden woordelijk in blauw. Het bestand is inmiddels duurzaam opgeslagen als libfile_0dbf051843a881919a304ec99504eac1. De eerdere voorbereiding en opslagbeperking zijn hiermee voor deze leesversie ingehaald; de oorspronkelijke lokale reviewversie blijft bewaard.
+- Early is bevestigd als vertrekpunt, terwijl Yello met elke stijl mee moet kunnen komen. De artiesten- en trackvoorbeelden worden later met Fers concrete lijst verfijnd; er is geen nieuwe vaste ranglijst of persoonlijke plaatherinnering toegevoegd.
+- De bijlgrap wordt geen automatische afsluitzin of losse standaardcallback. Humor blijft afhankelijk van de context. Dennis en Fer mogen als bron of kenniscontroleur genoemd worden uitsluitend wanneer de herkomst van de specifieke kennis daadwerkelijk vaststaat; geen algemeen bronlabel op onbekende of anders afkomstige kennis.
+- De goedgekeurde aanvullingen over digitale identiteit, onderbouwde smaak, warm maar feitelijk begrensd reageren, organisator/feest/track, herformuleren, gewone taal, humor, klachten, historische programmering, Mirko/foto's, herkenning en bronattributie zijn voor de runtime geselecteerd. Reviewvragen, blauwe antwoorden, redactionele sjablonen en placeholders zijn uitgesloten.
+- De bestaande ronde-7-passages zijn op de relevante plaatsen gelijkgetrokken: geen Mirko-camera-belofte, geen vaste bijlcallback, editie II als historische programmering en de bestaande tracklijst als voorbeelden in afwachting van verfijning. De bij ronde 3 goedgekeurde Mirko-correcties blijven behouden.
+- Twee oudere actieve instructies botsten met de review: het absolute verbod op een gecontroleerd trackvoorbeeld bij smaakvragen en het vooraf aannemen van Haagse titelverwarring. Die zijn begrensd herformuleerd volgens het inhoudelijke akkoord. Een keuze op criterium mag uit aangeleverde gecontroleerde kennis; verzonnen vaste favorieten of ontbrekende credits blijven verboden.
+- De kernregels uit ronde 7 zijn compact in GABBER_YELLO_PROFILE verwerkt, zodat ze niet afhankelijk zijn van toevallige passage-selectie. Het YellowMind-profiel blijft exact gelijk. Geen nieuwe modelaanroep, databasequery, webzoekactie of antwoordfilter toegevoegd; het vaste Gabber-profiel is wel iets langer. De bestaande selectie van maximaal drie passages en het kennisbudget blijven ongewijzigd.
+- Op een met de actuele stagingtree vergeleken snapshot slagen 80 offline unittest-methoden: de bestaande 74 plus zes ronde-7-tests op kennisselectie, afwezigheid van reviewtekst, het daadwerkelijke modelaanroep-pad met gemockte diensten, voorwaardelijke bronattributie en behoud van YellowMind. De bestaande 89 kennisvraagcontroles blijven slagen. Twee gewijzigde Pythonmodules zijn syntactisch gecontroleerd. Deze tests doen geen echte provider-, model- of databaseoproepen.
+- De stagingpublicatie omvat uitsluitend het ronde-7-kennisbestand, core/personalities.py, de gerichte favorietregel in core/mhjh_context.py, tests/test_gabber_round7_persona.py en deze blueprint. De runtime en productierepository askyellow-ai/main blijven op hun bestaande productieversie totdat Dennis afzonderlijk de gouden knop geeft.
+- De Render-deploy en echte chatproef volgen na de publicatie. Fers lijst en de toekomstige hakkenworkshop blijven aparte vervolgfasen.
+
+## Actuele vervolgstappen na selectie ronde 7
+1. De Render-stagingdeploy bevestigen en smaak, humor, bronattributie en de naamrelatie in echte gastchats controleren.
+2. Dennis en Fer testen de stagingchat en geven eventuele resterende opmerkingen.
+3. Alleen na een afzonderlijke gouden knop de geaccepteerde ronde 7 gecontroleerd naar productie overzetten.
+4. Fers concrete tracklijst later ontvangen en verifiëren; geen releasecredits of workshopinhoud vooruit invullen.
